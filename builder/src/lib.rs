@@ -1,4 +1,5 @@
 extern crate proc_macro;
+use std::collections::HashSet;
 
 use quote::{quote};
 use proc_macro::TokenStream;
@@ -15,11 +16,12 @@ pub fn derive(input: TokenStream) -> TokenStream {
         Data::Struct(ref data) => {
             match data.fields {
                 Fields::Named(ref fields) => {
+                    let optional_fields = get_optional_fields(&fields);
                     (
-                        expand_field_definitions(&fields),
+                        expand_field_definitions(&fields, &optional_fields),
                         expand_field_none_initializers(&fields),
-                        expand_field_setters(&fields),
-                        expand_build(&name, &fields),
+                        expand_field_setters(&fields, &optional_fields),
+                        expand_build(&name, &fields, &optional_fields),
                     )
                 }
                 _ => { (quote!{}, quote!{}, quote!{}, quote!{}) },
@@ -50,12 +52,19 @@ pub fn derive(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
-fn expand_field_definitions(fields: &syn::FieldsNamed) -> TokenStream2 {
+fn expand_field_definitions(fields: &syn::FieldsNamed, optional_fields: &HashSet<String>) -> TokenStream2 {
     let f = fields.named.iter().map(|f| {
         let ident = &f.ident;
         let ty = &f.ty;
-        quote! {
-            #ident: Option<#ty>
+        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap_or("".to_owned());
+        if optional_fields.contains(&identstr) {
+            quote! {
+                #ident: #ty
+            }
+        } else {
+            quote! {
+                #ident: Option<#ty>
+            }
         }
     });
     quote! { #(#f,)* }
@@ -71,22 +80,49 @@ fn expand_field_none_initializers(fields: &syn::FieldsNamed) -> TokenStream2 {
     quote! { #(#f,)* }
 }
 
-fn expand_field_setters(fields: &syn::FieldsNamed) -> TokenStream2 {
+fn expand_field_setters(fields: &syn::FieldsNamed, optional_fields: &HashSet<String>) -> TokenStream2 {
     let setters = fields.named.iter().map(|f| {
         let ident = &f.ident;
         let ty = &f.ty;
-        quote! {
-            pub fn #ident(&mut self, #ident: #ty) -> &mut Self {
-                self.#ident = Some(#ident);
-                self
+        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap_or("".to_owned());
+        if optional_fields.contains(&identstr) {
+            let ty = match &f.ty {
+                syn::Type::Path(ref path) => {
+                    match path.path.segments[0].arguments {
+                        syn::PathArguments::AngleBracketed(ref arg) => {
+                            match arg.args[0] {
+                                syn::GenericArgument::Type(ref t) => t.clone(),
+                                _ => unreachable!(),
+                            }
+                        },
+                        _ => unreachable!(),
+                    }
+                },
+                _ => unreachable!(),
+            };
+            quote! {
+                pub fn #ident(&mut self, #ident: #ty) -> &mut Self {
+                    self.#ident = Some(#ident);
+                    self
+                }
+            }
+        } else {
+            quote! {
+                pub fn #ident(&mut self, #ident: #ty) -> &mut Self {
+                    self.#ident = Some(#ident);
+                    self
+                }
             }
         }
     });
     quote! { #(#setters)* }
 }
 
-fn expand_build(name: &Ident, fields: &syn::FieldsNamed) -> TokenStream2 {
-    let validation = fields.named.iter().map(|f| {
+fn expand_build(name: &Ident, fields: &syn::FieldsNamed, optional_fields: &HashSet<String>) -> TokenStream2 {
+    let validation = fields.named.iter().filter(|f| {
+        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap_or("".to_owned());
+        !optional_fields.contains(&identstr)
+    }).map(|f| {
         let ident = &f.ident;
         let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap_or("".to_owned());
         quote!{
@@ -97,8 +133,15 @@ fn expand_build(name: &Ident, fields: &syn::FieldsNamed) -> TokenStream2 {
     });
     let f = fields.named.iter().map(|f| {
         let ident = &f.ident;
-        quote! {
-            #ident: self.#ident.take().unwrap(),
+        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap_or("".to_owned());
+        if optional_fields.contains(&identstr) {
+            quote! {
+                #ident: self.#ident.take(),
+            }
+        } else {
+            quote! {
+                #ident: self.#ident.take().unwrap(),
+            }
         }
     });
     quote! {
@@ -107,4 +150,17 @@ fn expand_build(name: &Ident, fields: &syn::FieldsNamed) -> TokenStream2 {
             #(#f)*
         })
     }
+}
+
+fn get_optional_fields(fields: &syn::FieldsNamed) -> HashSet<String> {
+    fields.named.iter().filter(|f| {
+        match f.ty {
+            syn::Type::Path(ref path) => {
+                &path.path.segments[0].ident == "Option"
+            },
+            _ => false,
+        }
+    }).map(|f| {
+        f.ident.as_ref().map(|x| format!("{}", x)).unwrap()
+    }).collect()
 }
