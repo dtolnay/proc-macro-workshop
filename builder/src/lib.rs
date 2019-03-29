@@ -10,7 +10,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let name = &input.ident;
     let buildername = Ident::new(&format!("{}Builder", name), input.ident.span().clone());
 
-    let (fields, fields_init) = match input.data {
+    let (fields, fields_init, setters) = match input.data {
         Data::Struct(ref data) => {
             match data.fields {
                 Fields::Named(ref fields) => {
@@ -27,12 +27,23 @@ pub fn derive(input: TokenStream) -> TokenStream {
                             #ident: None
                         }
                     }).collect::<Vec<_>>();
+                    let setters = fields.named.iter().map(|f| {
+                        let ident = &f.ident;
+                        let ty = &f.ty;
+                        quote! {
+                            fn #ident(&mut self, #ident: #ty) -> &mut Self {
+                                self.#ident = Some(#ident);
+                                self
+                            }
+                        }
+                    }).collect::<Vec<_>>();
                     (
                         quote! { #(#fd,)* },
                         quote! { #(#fi,)* },
+                        quote! { #(#setters)* },
                     )
                 }
-                _ => { (quote!{}, quote!{}) },
+                _ => { (quote!{}, quote!{}, quote!{}) },
             }
         },
         _ => unimplemented!(),
@@ -47,6 +58,10 @@ pub fn derive(input: TokenStream) -> TokenStream {
 
         pub struct #buildername {
             #fields
+        }
+
+        impl #buildername {
+            #setters
         }
     };
     TokenStream::from(expanded)
