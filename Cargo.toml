@@ -4,6 +4,8 @@ version = "0.0.0"
 edition = "2018"
 publish = false
 
+[workspace]
+
 [[bin]]
 name = "workshop"
 path = "main.rs"

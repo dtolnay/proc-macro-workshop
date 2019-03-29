@@ -9,6 +9,7 @@ pub struct Manifest {
     pub dependencies: Map<String, Dependency>,
     #[serde(rename = "bin")]
     pub bins: Vec<Bin>,
+    pub workspace: Option<Workspace>,
 }
 
 #[derive(Serialize)]
@@ -49,4 +50,8 @@ pub struct Config {
 #[derive(Serialize)]
 pub struct Build {
     pub rustflags: Vec<String>,
+}
+
+#[derive(Serialize)]
+pub struct Workspace {
 }
