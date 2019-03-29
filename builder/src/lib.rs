@@ -1,5 +1,5 @@
 extern crate proc_macro;
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 
 use quote::{quote};
 use proc_macro::TokenStream;
@@ -55,11 +55,11 @@ pub fn derive(input: TokenStream) -> TokenStream {
     TokenStream::from(expanded)
 }
 
-fn expand_field_definitions(fields: &syn::FieldsNamed, optional_fields: &HashSet<String>, builders: &HashMap<String, String>) -> TokenStream2 {
+fn expand_field_definitions(fields: &syn::FieldsNamed, optional_fields: &HashSet<Ident>, builders: &BTreeMap<Ident, Ident>) -> TokenStream2 {
     let f = fields.named.iter().map(|f| {
         let ident = &f.ident;
         let ty = &f.ty;
-        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap();
+        let identstr = f.ident.as_ref().unwrap();
         if optional_fields.contains(&identstr) || builders.contains_key(&identstr) {
             quote! {
                 #ident: #ty
@@ -73,9 +73,9 @@ fn expand_field_definitions(fields: &syn::FieldsNamed, optional_fields: &HashSet
     quote! { #(#f,)* }
 }
 
-fn expand_field_initializers(fields: &syn::FieldsNamed, builders: &HashMap<String, String>) -> TokenStream2 {
+fn expand_field_initializers(fields: &syn::FieldsNamed, builders: &BTreeMap<Ident, Ident>) -> TokenStream2 {
     let f1 = fields.named.iter().filter(|f| {
-        !builders.contains_key(&f.ident.as_ref().unwrap().to_string())
+        !builders.contains_key(&f.ident.as_ref().unwrap())
     }).map(|f| {
         let ident = &f.ident;
         quote! {
@@ -83,18 +83,16 @@ fn expand_field_initializers(fields: &syn::FieldsNamed, builders: &HashMap<Strin
         }
     });
     let f2 = builders.keys().map(|k| {
-        // this should be def_site, but I'm unable to get the config to enable that method
-        let id = Ident::new(&k, proc_macro2::Span::call_site());
-        quote! { #id: Vec::new() }
+        quote! { #k: Vec::new() }
     });
     quote! { #(#f1,)* #(#f2,)* }
 }
 
-fn expand_field_setters(fields: &syn::FieldsNamed, optional_fields: &HashSet<String>, builders: &HashMap<String, String>) -> TokenStream2 {
+fn expand_field_setters(fields: &syn::FieldsNamed, optional_fields: &HashSet<Ident>, builders: &BTreeMap<Ident, Ident>) -> TokenStream2 {
     let setters = fields.named.iter().map(|f| {
         let ident = &f.ident;
         let ty = &f.ty;
-        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap();
+        let identstr = f.ident.as_ref().unwrap();
         if optional_fields.contains(&identstr) {
             let ty = match &f.ty {
                 syn::Type::Path(ref path) => {
@@ -117,8 +115,7 @@ fn expand_field_setters(fields: &syn::FieldsNamed, optional_fields: &HashSet<Str
                 }
             }
         } else if builders.contains_key(&identstr) {
-            // this should be def_site, but I'm unable to get the config to enable that method
-            let methodname = Ident::new(&builders.get(&identstr).unwrap(), proc_macro2::Span::call_site());
+            let methodname = &builders.get(&identstr).unwrap();
             let ty = match &f.ty {
                 syn::Type::Path(ref path) => {
                     match path.path.segments[0].arguments {
@@ -151,9 +148,9 @@ fn expand_field_setters(fields: &syn::FieldsNamed, optional_fields: &HashSet<Str
     quote! { #(#setters)* }
 }
 
-fn expand_build(name: &Ident, fields: &syn::FieldsNamed, optional_fields: &HashSet<String>, builders: &HashMap<String, String>) -> TokenStream2 {
+fn expand_build(name: &Ident, fields: &syn::FieldsNamed, optional_fields: &HashSet<Ident>, builders: &BTreeMap<Ident, Ident>) -> TokenStream2 {
     let validation = fields.named.iter().filter(|f| {
-        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap();
+        let identstr = f.ident.as_ref().unwrap();
         !optional_fields.contains(&identstr) && !builders.contains_key(&identstr)
     }).map(|f| {
         let ident = &f.ident;
@@ -166,7 +163,7 @@ fn expand_build(name: &Ident, fields: &syn::FieldsNamed, optional_fields: &HashS
     });
     let f = fields.named.iter().map(|f| {
         let ident = &f.ident;
-        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap();
+        let identstr = f.ident.as_ref().unwrap();
         if optional_fields.contains(&identstr) {
             quote! {
                 #ident: self.#ident.take(),
@@ -189,7 +186,7 @@ fn expand_build(name: &Ident, fields: &syn::FieldsNamed, optional_fields: &HashS
     }
 }
 
-fn get_optional_fields(fields: &syn::FieldsNamed) -> HashSet<String> {
+fn get_optional_fields(fields: &syn::FieldsNamed) -> HashSet<Ident> {
     fields.named.iter().filter(|f| {
         match f.ty {
             syn::Type::Path(ref path) => {
@@ -197,12 +194,12 @@ fn get_optional_fields(fields: &syn::FieldsNamed) -> HashSet<String> {
             },
             _ => false,
         }
-    }).map(|f| {
-        f.ident.as_ref().map(|x| format!("{}", x)).unwrap()
+    }).flat_map(|f| {
+        f.ident.clone()
     }).collect()
 }
 
-fn get_fields_builders(fields: &syn::FieldsNamed) -> Option<HashMap<String, String>> {
+fn get_fields_builders(fields: &syn::FieldsNamed) -> Option<BTreeMap<Ident, Ident>> {
     let builderfields = fields.named.iter().filter(|f| {
         f.attrs.len() > 0 && f.attrs.iter().any(|attr| &attr.path.segments[0].ident.to_string() == "builder")
     }).collect::<Vec<_>>();
@@ -218,7 +215,7 @@ fn get_fields_builders(fields: &syn::FieldsNamed) -> Option<HashMap<String, Stri
                                 syn::Meta::NameValue(ref kv) => {
                                     if kv.ident == "each" {
                                         match kv.lit {
-                                            syn::Lit::Str(ref s) => Some(s.value()),
+                                            syn::Lit::Str(ref s) => Some(Ident::new(&s.value(), proc_macro2::Span::call_site())),
                                             _ => None,
                                         }
                                     } else {
@@ -234,8 +231,8 @@ fn get_fields_builders(fields: &syn::FieldsNamed) -> Option<HashMap<String, Stri
             },
             _ => None,
         };
-        name.map(|name| (f.ident.as_ref().unwrap().to_string(), name))
-    }).collect::<HashMap<_, _>>();
+        name.map(|name| (f.ident.clone().unwrap(), name))
+    }).collect::<BTreeMap<_, _>>();
     if hm.len() == builderfields.len() {
         Some(hm)
     } else {
