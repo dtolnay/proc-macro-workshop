@@ -2,6 +2,7 @@ extern crate proc_macro;
 
 use quote::{quote};
 use proc_macro::TokenStream;
+use proc_macro2::{TokenStream as TokenStream2};
 use syn::{DeriveInput, parse_macro_input, Data, Fields, Ident};
 
 #[proc_macro_derive(Builder)]
@@ -14,33 +15,10 @@ pub fn derive(input: TokenStream) -> TokenStream {
         Data::Struct(ref data) => {
             match data.fields {
                 Fields::Named(ref fields) => {
-                    let fd = fields.named.iter().map(|f| {
-                        let ident = &f.ident;
-                        let ty = &f.ty;
-                        quote! {
-                            #ident: Option<#ty>
-                        }
-                    }).collect::<Vec<_>>();
-                    let fi = fields.named.iter().map(|f| {
-                        let ident = &f.ident;
-                        quote! {
-                            #ident: None
-                        }
-                    }).collect::<Vec<_>>();
-                    let setters = fields.named.iter().map(|f| {
-                        let ident = &f.ident;
-                        let ty = &f.ty;
-                        quote! {
-                            fn #ident(&mut self, #ident: #ty) -> &mut Self {
-                                self.#ident = Some(#ident);
-                                self
-                            }
-                        }
-                    }).collect::<Vec<_>>();
                     (
-                        quote! { #(#fd,)* },
-                        quote! { #(#fi,)* },
-                        quote! { #(#setters)* },
+                        expand_field_definitions(&fields),
+                        expand_field_initializers(&fields),
+                        expand_field_setters(&fields),
                     )
                 }
                 _ => { (quote!{}, quote!{}, quote!{}) },
@@ -65,4 +43,39 @@ pub fn derive(input: TokenStream) -> TokenStream {
         }
     };
     TokenStream::from(expanded)
+}
+
+fn expand_field_definitions(fields: &syn::FieldsNamed) -> TokenStream2 {
+    let f = fields.named.iter().map(|f| {
+        let ident = &f.ident;
+        let ty = &f.ty;
+        quote! {
+            #ident: Option<#ty>
+        }
+    });
+    quote! { #(#f,)* }
+}
+
+fn expand_field_initializers(fields: &syn::FieldsNamed) -> TokenStream2 {
+    let f = fields.named.iter().map(|f| {
+        let ident = &f.ident;
+        quote! {
+            #ident: None
+        }
+    });
+    quote! { #(#f,)* }
+}
+
+fn expand_field_setters(fields: &syn::FieldsNamed) -> TokenStream2 {
+    let setters = fields.named.iter().map(|f| {
+        let ident = &f.ident;
+        let ty = &f.ty;
+        quote! {
+            fn #ident(&mut self, #ident: #ty) -> &mut Self {
+                self.#ident = Some(#ident);
+                self
+            }
+        }
+    });
+    quote! { #(#setters)* }
 }
