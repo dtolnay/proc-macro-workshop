@@ -11,6 +11,7 @@ pub enum Error {
     Mismatch,
     Open(PathBuf, io::Error),
     PkgName(env::VarError),
+    ProjectDir,
     ReadStderr(io::Error),
     RunFailed,
     ShouldNotHaveCompiled,
@@ -33,6 +34,7 @@ impl Display for Error {
             Mismatch => write!(f, "compiler error does not match expected error"),
             Open(path, e) => write!(f, "{}: {}", path.display(), e),
             PkgName(e) => write!(f, "failed to detect CARGO_PKG_NAME: {}", e),
+            ProjectDir => write!(f, "failed to determine name of project dir"),
             ReadStderr(e) => write!(f, "failed to read stderr file: {}", e),
             RunFailed => write!(f, "execution of the test case was unsuccessful"),
             ShouldNotHaveCompiled => {

@@ -2,7 +2,7 @@ use std::collections::BTreeMap as Map;
 use std::env;
 use std::ffi::OsStr;
 use std::fs::{self, File};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use super::{Expected, Runner, Test};
 use crate::banner;
@@ -55,11 +55,10 @@ impl Runner {
         let config = self.make_config();
         let config_toml = toml::to_string(&config)?;
 
-        let target_dir = cargo::target_dir()?;
-        fs::create_dir_all(target_dir.join("tests/.cargo"))?;
-        fs::write(target_dir.join("tests/Cargo.toml"), manifest_toml)?;
-        fs::write(target_dir.join("tests/.cargo/config"), config_toml)?;
-        fs::write(target_dir.join("tests/main.rs"), b"fn main() {}\n")?;
+        fs::create_dir_all("../target/tests/.cargo")?;
+        fs::write("../target/tests/Cargo.toml", manifest_toml)?;
+        fs::write("../target/tests/.cargo/config", config_toml)?;
+        fs::write("../target/tests/main.rs", b"fn main() {}\n")?;
 
         cargo::build_dependencies(&project)
     }
@@ -77,13 +76,13 @@ impl Runner {
             workspace: Some(Workspace {}),
         };
 
-        let cwd = env::current_dir()?;
+        let project_dir = project_dir_relative()?;
 
         manifest.dependencies.insert(
             crate_name,
             Dependency {
                 version: None,
-                path: Some(cwd.display().to_string()),
+                path: Some(project_dir.clone()),
                 features: Vec::new(),
             },
         );
@@ -104,7 +103,7 @@ impl Runner {
         for test in &self.tests {
             manifest.bins.push(Bin {
                 name: test.name(),
-                path: cwd.join(&test.path),
+                path: project_dir.join(&test.path),
             });
         }
 
@@ -198,6 +197,14 @@ impl Test {
             Err(Error::Mismatch)
         }
     }
+}
+
+// Path to builder, or seq, etc (whichever is being tested).
+fn project_dir_relative() -> Result<PathBuf> {
+    let project_dir = env::current_dir()?;
+    let name = project_dir.as_path().file_name().ok_or(Error::ProjectDir)?;
+    let relative = Path::new("../..").join(name);
+    Ok(relative)
 }
 
 fn check_exists(path: &Path) -> Result<()> {

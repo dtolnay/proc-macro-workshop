@@ -1,22 +1,12 @@
 use std::env;
 use std::process::{Command, Output};
-use std::path::PathBuf;
 
 use crate::error::{Error, Result};
 
-pub fn target_dir() -> Result<PathBuf> {
-    let mut target_dir = env::current_dir()?;
-    target_dir.pop(); // chop off our crate name
-    target_dir.push("target");
-    assert!(target_dir.exists());
-    Ok(target_dir)
-}
-
 fn cargo() -> Result<Command> {
     let mut cmd = Command::new("cargo");
-    let target_dir = target_dir()?;
-    cmd.current_dir(target_dir.join("tests"))
-        .env("CARGO_TARGET_DIR", &target_dir);
+    cmd.current_dir("../target/tests");
+    cmd.env("CARGO_TARGET_DIR", "..");
     Ok(cmd)
 }
 
