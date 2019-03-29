@@ -8,7 +8,7 @@
 // corresponding builder method which accepts one vector element at a time.
 //
 // In order for the compiler to know that these builder attributes are
-// associated with your macro, the must be declared at the entry point of the
+// associated with your macro, they must be declared at the entry point of the
 // derive macro. Otherwise the compiler will report them as unrecognized
 // attributes and refuse to compile the caller's code.
 //
