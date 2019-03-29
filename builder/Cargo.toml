@@ -18,4 +18,4 @@ workshop-test-runner = { path = "../test-runner" }
 [dependencies]
 quote = "0.6"
 syn = "0.15"
-proc-macro2 = { version = "0.4.4", default-features = false }
+proc-macro2 = { version = "0.4.27", default-features = false }
