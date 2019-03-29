@@ -11,7 +11,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let name = &input.ident;
     let buildername = Ident::new(&format!("{}Builder", name), input.ident.span().clone());
 
-    let (fields, fields_init, setters, field_real_init) = match input.data {
+    let (fields, fields_init, setters, build) = match input.data {
         Data::Struct(ref data) => {
             match data.fields {
                 Fields::Named(ref fields) => {
@@ -19,7 +19,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                         expand_field_definitions(&fields),
                         expand_field_none_initializers(&fields),
                         expand_field_setters(&fields),
-                        expand_field_real_initializers(&fields),
+                        expand_build(&name, &fields),
                     )
                 }
                 _ => { (quote!{}, quote!{}, quote!{}, quote!{}) },
@@ -42,10 +42,8 @@ pub fn derive(input: TokenStream) -> TokenStream {
         impl #buildername {
             #setters
 
-            pub fn build(self) -> Result<#name, Box<dyn std::error::Error>> {
-                Ok(#name {
-                    #field_real_init
-                })
+            pub fn build(&mut self) -> Result<#name, Box<dyn std::error::Error>> {
+                #build
             }
         }
     };
@@ -78,7 +76,7 @@ fn expand_field_setters(fields: &syn::FieldsNamed) -> TokenStream2 {
         let ident = &f.ident;
         let ty = &f.ty;
         quote! {
-            fn #ident(&mut self, #ident: #ty) -> &mut Self {
+            pub fn #ident(&mut self, #ident: #ty) -> &mut Self {
                 self.#ident = Some(#ident);
                 self
             }
@@ -87,13 +85,26 @@ fn expand_field_setters(fields: &syn::FieldsNamed) -> TokenStream2 {
     quote! { #(#setters)* }
 }
 
-fn expand_field_real_initializers(fields: &syn::FieldsNamed) -> TokenStream2 {
-    let f = fields.named.iter().map(|f| {
+fn expand_build(name: &Ident, fields: &syn::FieldsNamed) -> TokenStream2 {
+    let validation = fields.named.iter().map(|f| {
         let ident = &f.ident;
         let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap_or("".to_owned());
-        quote! {
-            #ident: self.#ident.ok_or(<Box<dyn std::error::Error>>::from(format!("{} is missing", #identstr)))?
+        quote!{
+            if self.#ident.is_none() {
+                return Err(<Box<dyn std::error::Error>>::from(format!("{} is missing", #identstr)));
+            }
         }
     });
-    quote! { #(#f,)* }
+    let f = fields.named.iter().map(|f| {
+        let ident = &f.ident;
+        quote! {
+            #ident: self.#ident.take().unwrap(),
+        }
+    });
+    quote! {
+        #(#validation)*
+        Ok(#name {
+            #(#f)*
+        })
+    }
 }
