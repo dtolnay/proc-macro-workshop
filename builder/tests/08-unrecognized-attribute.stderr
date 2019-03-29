@@ -1,0 +1,4 @@
+error: missing or invalid `each` parameter in builder
+   |
+19 | #[derive(Builder)]
+   |          ^^^^^^^

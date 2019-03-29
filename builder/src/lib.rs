@@ -16,7 +16,12 @@ pub fn derive(input: TokenStream) -> TokenStream {
         Data::Struct(ref data) => {
             match data.fields {
                 Fields::Named(ref fields) => {
-                    let builders = get_fields_builders(&fields);
+                    let builders = match get_fields_builders(&fields) {
+                        Some(b) => b,
+                        None => return TokenStream::from(quote! {
+                            compile_error!("missing or invalid `each` parameter in builder");
+                        }),
+                    };
                     let optional_fields = get_optional_fields(&fields);
                     (
                         expand_field_definitions(&fields, &optional_fields, &builders),
@@ -200,10 +205,11 @@ fn get_optional_fields(fields: &syn::FieldsNamed) -> HashSet<String> {
     }).collect()
 }
 
-fn get_fields_builders(fields: &syn::FieldsNamed) -> HashMap<String, String> {
-    fields.named.iter().filter(|f| {
+fn get_fields_builders(fields: &syn::FieldsNamed) -> Option<HashMap<String, String>> {
+    let builderfields = fields.named.iter().filter(|f| {
         f.attrs.len() > 0 && f.attrs.iter().any(|attr| &attr.path.segments[0].ident.to_string() == "builder")
-    }).filter_map(|f| {
+    }).collect::<Vec<_>>();
+    let hm = builderfields.iter().filter_map(|f| {
         let attr = f.attrs.iter().find(|attr| &attr.path.segments[0].ident.to_string() == "builder").unwrap();
         let meta = attr.parse_meta().unwrap();
         let name = match meta {
@@ -216,21 +222,26 @@ fn get_fields_builders(fields: &syn::FieldsNamed) -> HashMap<String, String> {
                                     if &kv.ident.to_string() == "each" {
                                         match kv.lit {
                                             syn::Lit::Str(ref s) => Some(s.value()),
-                                            _ => unimplemented!(),
+                                            _ => None,
                                         }
                                     } else {
-                                        unimplemented!()
+                                        None
                                     }
                                 },
-                                _ => unimplemented!(),
+                                _ => None,
                             }
                         },
-                        _ => unimplemented!(),
+                        _ => None,
                     }
                 })
             },
-            _ => unimplemented!(),
+            _ => None,
         };
         name.map(|name| (f.ident.as_ref().unwrap().to_string(), name))
-    }).collect()
+    }).collect::<HashMap<_, _>>();
+    if hm.len() == builderfields.len() {
+        Some(hm)
+    } else {
+        None
+    }
 }
