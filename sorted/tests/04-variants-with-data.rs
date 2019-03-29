@@ -1,3 +1,19 @@
+// This test is similar to the previous where want to ensure that the macro
+// correctly generates an error when the input `enum` is out of order, but this
+// time we're working with an `enum` that has a data payload on each variant
+// instead of having an empty variant.
+//
+// The main thing we're testing here is that the error message only points to
+// the identifier of each variant, not the entire variant itself. Similar to a
+// test before, try inserting different spans to the error created and see what
+// comes out!
+//
+//
+// Resources
+//
+//  - The `syn::Error` type
+//    https://docs.rs/syn/0.15/syn/struct.Error.html
+
 use sorted::sorted;
 
 use std::env::VarError;
