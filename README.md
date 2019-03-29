@@ -213,8 +213,7 @@ For example, the following invocation builds a struct with a total size of 32
 bits or 4 bytes. It places field `a` in the least significant bit of the first
 byte, field `b` in the next three least significant bits, field `c` in the
 remaining four most significant bits of the first byte, and field `d` spanning
-the next three bytes. The least significant byte of `d` will be held in the
-second byte of our struct, adjacent to the byte holding the first three fields.
+the next three bytes.
 
 ```rust
 use bitfield::*;
