@@ -1,22 +1,15 @@
-// Now that we've asserted that `#[sorted]` is parsing its input and that it's
-// an `enum`, let's actually assert the enum is sorted!
+// At this point we have an enum and we need to check whether the variants
+// appear in sorted order!
 //
-// From the previous tests you should now have an `ItemEnum` representing the
-// parsed `enum`. Using this we can inspect the `variants` field to list all the
-// variants of the enum that we parsed. What you're interested in is the `ident`
-// field of each `Variant`.
+// When your implementation notices a variant that compares lexicographically
+// less than one of the earlier variants, you'll want to construct a syn::Error
+// that gets converted to TokenStream by the already existing code that handled
+// this conversion during the previous test case.
 //
-// Here you'll want to get a list of all `ident` names for each variant and
-// assert that, as listed in the source, they are all sorted. When a variant is
-// not in correct sorted order, you'll want to create an `Error` (like we did
-// previously when it wasn't an `enum`) which indicates exactly what variant is
-// sorted out of order.
-//
-//
-// Resources
-//
-//  - The `syn::ItemEnum` type
-//    https://docs.rs/syn/0.15/syn/struct.ItemEnum.html
+// The "span" of your error, which determines where the compiler places the
+// resulting error message, will be the span of whichever variant name that is
+// not in the right place. Ideally the error message should also identify which
+// other variant the user needs to move this one to be in front of.
 
 use sorted::sorted;
 

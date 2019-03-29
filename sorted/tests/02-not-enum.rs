@@ -1,32 +1,30 @@
-// The `#[sorted]` macro only works on `enum` types, so this is a test to ensure
-// that when it's attached to a `struct` it produces an error. Here you'll take
-// a look at the `syn::Item` you previously parsed to ensure that it's an
-// `enum`, returning an error for other types like a `struct`.
+// The #[sorted] macro is only defined to work on enum types, so this is a test
+// to ensure that when it's attached to a struct (or anything else) it produces
+// some reasonable error. Your macro will need to look into the syn::Item that
+// it parsed to ensure that it represents an enum, returning an error for any
+// other type of Item such as a struct.
 //
 // This is an exercise in exploring how to return errors from procedural macros.
-// The goal is to produce a readable error message which is tailored to this
-// specific macro (saying that `#[sorted]` cannot be applied to `struct`). For
-// this you'll want to explore the `syn::Error` type, how to construct it, and
-// how to return it.
+// The goal is to produce an understandable error message which is tailored to
+// this specific macro (saying that #[sorted] cannot be applied to things other
+// than enum). For this you'll want to look at the syn::Error type, how to
+// construct it, and how to return it.
 //
-// You'll note that the return value of the macro is a `TokenStream`, not a
-// `Result` with an error. The `syn::Error` type has helpful methods to turn it
-// into a token stream which may be of use!
+// Notice that the return value of an attribute macro is simply a TokenStream,
+// not a Result with an error. The syn::Error type provides a method to render
+// your error as a TokenStream containing an invocation of the compile_error
+// macro.
 //
-// One important concept you'll be exploring here is what a `Span` is and how it
-// affects compiler error messages. When you create an `Error` it'll be assigned
-// a `Span`, and try plugging in different kinds of `Span`s to see what happens!
-//
-// A final tweak you may want to make is to have the `sorted` function wrap an
-// internal function which works with `Result`, so most of the macro can be
-// written with `Result`-returning functions while the top-level function
-// convers that to a `TokenStream`.
+// A final tweak you may want to make is to have the `sorted` function delegate
+// to a private helper function which works with Result, so most of the macro
+// can be written with Result-returning functions while the top-level function
+// handles the conversion down to TokenStream.
 //
 //
 // Resources
 //
-//  - The `syn::Error` type
-//    https://docs.rs/syn/0.15/syn/struct.Error.html
+//   - The syn::Error type:
+//     https://docs.rs/syn/0.15/syn/struct.Error.html
 
 use sorted::sorted;
 
