@@ -11,17 +11,18 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let name = &input.ident;
     let buildername = Ident::new(&format!("{}Builder", name), input.ident.span().clone());
 
-    let (fields, fields_init, setters) = match input.data {
+    let (fields, fields_init, setters, field_real_init) = match input.data {
         Data::Struct(ref data) => {
             match data.fields {
                 Fields::Named(ref fields) => {
                     (
                         expand_field_definitions(&fields),
-                        expand_field_initializers(&fields),
+                        expand_field_none_initializers(&fields),
                         expand_field_setters(&fields),
+                        expand_field_real_initializers(&fields),
                     )
                 }
-                _ => { (quote!{}, quote!{}, quote!{}) },
+                _ => { (quote!{}, quote!{}, quote!{}, quote!{}) },
             }
         },
         _ => unimplemented!(),
@@ -40,6 +41,12 @@ pub fn derive(input: TokenStream) -> TokenStream {
 
         impl #buildername {
             #setters
+
+            pub fn build(self) -> Result<#name, Box<dyn std::error::Error>> {
+                Ok(#name {
+                    #field_real_init
+                })
+            }
         }
     };
     TokenStream::from(expanded)
@@ -56,7 +63,7 @@ fn expand_field_definitions(fields: &syn::FieldsNamed) -> TokenStream2 {
     quote! { #(#f,)* }
 }
 
-fn expand_field_initializers(fields: &syn::FieldsNamed) -> TokenStream2 {
+fn expand_field_none_initializers(fields: &syn::FieldsNamed) -> TokenStream2 {
     let f = fields.named.iter().map(|f| {
         let ident = &f.ident;
         quote! {
@@ -78,4 +85,15 @@ fn expand_field_setters(fields: &syn::FieldsNamed) -> TokenStream2 {
         }
     });
     quote! { #(#setters)* }
+}
+
+fn expand_field_real_initializers(fields: &syn::FieldsNamed) -> TokenStream2 {
+    let f = fields.named.iter().map(|f| {
+        let ident = &f.ident;
+        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap_or("".to_owned());
+        quote! {
+            #ident: self.#ident.ok_or(<Box<dyn std::error::Error>>::from(format!("{} is missing", #identstr)))?
+        }
+    });
+    quote! { #(#f,)* }
 }
