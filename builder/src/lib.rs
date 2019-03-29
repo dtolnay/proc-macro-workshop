@@ -50,7 +50,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
         impl #buildername {
             #setters
 
-            pub fn build(&mut self) -> Result<#name, Box<dyn std::error::Error>> {
+            pub fn build(&mut self) -> std::result::Result<#name, std::boxed::Box<dyn std::error::Error>> {
                 #build
             }
         }
@@ -69,7 +69,7 @@ fn expand_field_definitions(fields: &syn::FieldsNamed, optional_fields: &HashSet
             }
         } else {
             quote! {
-                #ident: Option<#ty>
+                #ident: std::option::Option<#ty>
             }
         }
     });
@@ -82,7 +82,7 @@ fn expand_field_initializers(fields: &syn::FieldsNamed, builders: &HashMap<Strin
     }).map(|f| {
         let ident = &f.ident;
         quote! {
-            #ident: None
+            #ident: std::option::Option::None
         }
     });
     let f2 = builders.keys().map(|k| {
@@ -115,7 +115,7 @@ fn expand_field_setters(fields: &syn::FieldsNamed, optional_fields: &HashSet<Str
             };
             quote! {
                 pub fn #ident(&mut self, #ident: #ty) -> &mut Self {
-                    self.#ident = Some(#ident);
+                    self.#ident = std::option::Option::Some(#ident);
                     self
                 }
             }
@@ -145,7 +145,7 @@ fn expand_field_setters(fields: &syn::FieldsNamed, optional_fields: &HashSet<Str
         } else {
             quote! {
                 pub fn #ident(&mut self, #ident: #ty) -> &mut Self {
-                    self.#ident = Some(#ident);
+                    self.#ident = std::option::Option::Some(#ident);
                     self
                 }
             }
@@ -163,7 +163,7 @@ fn expand_build(name: &Ident, fields: &syn::FieldsNamed, optional_fields: &HashS
         let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap_or("".to_owned());
         quote!{
             if self.#ident.is_none() {
-                return Err(<Box<dyn std::error::Error>>::from(format!("{} is missing", #identstr)));
+                return Err(<std::boxed::Box<dyn std::error::Error>>::from(format!("{} is missing", #identstr)));
             }
         }
     });
