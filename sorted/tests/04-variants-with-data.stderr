@@ -1,0 +1,4 @@
+error: Dyn should sort before Fmt
+   |
+15 |     Dyn(Box<dyn StdError>),
+   |     ^^^

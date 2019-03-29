@@ -1,0 +1,4 @@
+error: SomethingFailed should sort before ThatFailed
+  |
+7 |     SomethingFailed,
+  |     ^^^^^^^^^^^^^^^
