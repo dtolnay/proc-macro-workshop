@@ -10,31 +10,28 @@ use syn::{DeriveInput, parse_macro_input, Data, Fields, Ident};
 pub fn derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = &input.ident;
-    let buildername = Ident::new(&format!("{}Builder", name), input.ident.span().clone());
+    let buildername = Ident::new(&format!("{}Builder", name), name.span());
 
-    let (fields, fields_init, setters, build) = match input.data {
+    let fields = match input.data {
         Data::Struct(ref data) => {
             match data.fields {
-                Fields::Named(ref fields) => {
-                    let builders = match get_fields_builders(&fields) {
-                        Some(b) => b,
-                        None => return TokenStream::from(quote! {
-                            compile_error!("missing or invalid `each` parameter in builder");
-                        }),
-                    };
-                    let optional_fields = get_optional_fields(&fields);
-                    (
-                        expand_field_definitions(&fields, &optional_fields, &builders),
-                        expand_field_initializers(&fields, &builders),
-                        expand_field_setters(&fields, &optional_fields, &builders),
-                        expand_build(&name, &fields, &optional_fields, &builders),
-                    )
-                }
-                _ => { (quote!{}, quote!{}, quote!{}, quote!{}) },
+                Fields::Named(ref fields) => fields,
+                _ => { unimplemented!() },
             }
         },
         _ => unimplemented!(),
     };
+    let builders = match get_fields_builders(&fields) {
+        Some(b) => b,
+        None => return TokenStream::from(quote! {
+            compile_error!("missing or invalid `each` parameter in builder");
+        }),
+    };
+    let optional_fields = get_optional_fields(&fields);
+    let fields_def = expand_field_definitions(&fields, &optional_fields, &builders);
+    let fields_init = expand_field_initializers(&fields, &builders);
+    let setters = expand_field_setters(&fields, &optional_fields, &builders);
+    let build = expand_build(&name, &fields, &optional_fields, &builders);
 
     let expanded = quote! {
         impl #name {
@@ -44,7 +41,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
         }
 
         pub struct #buildername {
-            #fields
+            #fields_def
         }
 
         impl #buildername {
@@ -62,7 +59,7 @@ fn expand_field_definitions(fields: &syn::FieldsNamed, optional_fields: &HashSet
     let f = fields.named.iter().map(|f| {
         let ident = &f.ident;
         let ty = &f.ty;
-        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap_or("".to_owned());
+        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap();
         if optional_fields.contains(&identstr) || builders.contains_key(&identstr) {
             quote! {
                 #ident: #ty
@@ -97,7 +94,7 @@ fn expand_field_setters(fields: &syn::FieldsNamed, optional_fields: &HashSet<Str
     let setters = fields.named.iter().map(|f| {
         let ident = &f.ident;
         let ty = &f.ty;
-        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap_or("".to_owned());
+        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap();
         if optional_fields.contains(&identstr) {
             let ty = match &f.ty {
                 syn::Type::Path(ref path) => {
@@ -156,20 +153,20 @@ fn expand_field_setters(fields: &syn::FieldsNamed, optional_fields: &HashSet<Str
 
 fn expand_build(name: &Ident, fields: &syn::FieldsNamed, optional_fields: &HashSet<String>, builders: &HashMap<String, String>) -> TokenStream2 {
     let validation = fields.named.iter().filter(|f| {
-        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap_or("".to_owned());
+        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap();
         !optional_fields.contains(&identstr) && !builders.contains_key(&identstr)
     }).map(|f| {
         let ident = &f.ident;
-        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap_or("".to_owned());
+        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap();
         quote!{
             if self.#ident.is_none() {
-                return Err(<std::boxed::Box<dyn std::error::Error>>::from(format!("{} is missing", #identstr)));
+                return Err(<_>::from(format!("{} is missing", #identstr)));
             }
         }
     });
     let f = fields.named.iter().map(|f| {
         let ident = &f.ident;
-        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap_or("".to_owned());
+        let identstr = f.ident.as_ref().map(|x| format!("{}", x)).unwrap();
         if optional_fields.contains(&identstr) {
             quote! {
                 #ident: self.#ident.take(),
@@ -219,7 +216,7 @@ fn get_fields_builders(fields: &syn::FieldsNamed) -> Option<HashMap<String, Stri
                         syn::NestedMeta::Meta(ref m) => {
                             match m {
                                 syn::Meta::NameValue(ref kv) => {
-                                    if &kv.ident.to_string() == "each" {
+                                    if kv.ident == "each" {
                                         match kv.lit {
                                             syn::Lit::Str(ref s) => Some(s.value()),
                                             _ => None,
