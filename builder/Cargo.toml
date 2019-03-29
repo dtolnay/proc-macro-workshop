@@ -16,4 +16,5 @@ path = "tests/progress.rs"
 workshop-test-runner = { path = "../test-runner" }
 
 [dependencies]
-# TODO
+syn = { version="0.15", features=["derive"]}
+quote = "0.6"

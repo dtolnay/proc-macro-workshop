@@ -17,8 +17,9 @@ const IGNORED_LINTS: &[&str] = &["dead_code"];
 impl Runner {
     pub fn run(&mut self) {
         if let Err(err) = self.prepare() {
+            let message = format!("tests failed: {}", err);
             message::prepare_fail(err);
-            panic!("tests failed");
+            panic!(message);
         }
 
         println!();
