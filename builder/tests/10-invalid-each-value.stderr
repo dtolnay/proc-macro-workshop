@@ -1,0 +1,4 @@
+error: expected each to be a string
+   |
+22 |     #[builder(each = true)]
+   |                      ^^^^

@@ -1,4 +1,4 @@
-error: missing or invalid `each` parameter in builder
+error: unrecognized builder attribute `eac`
    |
-19 | #[derive(Builder)]
-   |          ^^^^^^^
+22 |     #[builder(eac = "arg")]
+   |               ^^^

@@ -1,0 +1,4 @@
+error: expected builder attribute to be a list
+   |
+22 |     #[builder]
+   |     ^^^^^^^^^^

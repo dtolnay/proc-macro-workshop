@@ -10,4 +10,8 @@ fn tests() {
     t.pass("tests/07-repeated-field.rs");
     t.compile_fail("tests/08-unrecognized-attribute.rs");
     t.pass("tests/09-redefined-prelude-types.rs");
+    t.compile_fail("tests/10-invalid-each-value.rs");
+    t.compile_fail("tests/11-invalid-parameter-type.rs");
+    t.compile_fail("tests/12-invalid-parameter-type2.rs");
+    t.compile_fail("tests/13-duplicated-each-parameter.rs");
 }

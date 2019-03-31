@@ -1,0 +1,4 @@
+error: expected builder attribute to be metadata, got literal instead
+   |
+22 |     #[builder("arg")]
+   |               ^^^^^

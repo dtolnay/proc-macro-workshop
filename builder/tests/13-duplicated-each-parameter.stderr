@@ -1,0 +1,4 @@
+error: expected `each` to be present only once
+   |
+22 |     #[builder(each = "arg", each = "arg")]
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

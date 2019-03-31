@@ -22,10 +22,8 @@ pub fn derive(input: TokenStream) -> TokenStream {
         _ => unimplemented!(),
     };
     let builders = match get_fields_builders(&fields) {
-        Some(b) => b,
-        None => return TokenStream::from(quote! {
-            compile_error!("missing or invalid `each` parameter in builder");
-        }),
+        Ok(b) => b,
+        Err(e) => return e.into(),
     };
     let optional_fields = get_optional_fields(&fields);
     let fields_def = expand_field_definitions(&fields, &optional_fields, &builders);
@@ -199,43 +197,48 @@ fn get_optional_fields(fields: &syn::FieldsNamed) -> HashSet<Ident> {
     }).collect()
 }
 
-fn get_fields_builders(fields: &syn::FieldsNamed) -> Option<BTreeMap<Ident, Ident>> {
+fn get_fields_builders(fields: &syn::FieldsNamed) -> Result<BTreeMap<Ident, Ident>, TokenStream2> {
     let builderfields = fields.named.iter().filter(|f| {
         f.attrs.len() > 0 && f.attrs.iter().any(|attr| &attr.path.segments[0].ident.to_string() == "builder")
     }).collect::<Vec<_>>();
-    let hm = builderfields.iter().filter_map(|f| {
+    builderfields.into_iter().map(|f| {
         let attr = f.attrs.iter().find(|attr| &attr.path.segments[0].ident.to_string() == "builder").unwrap();
         let meta = attr.parse_meta().unwrap();
-        let name = match meta {
+        match meta {
             syn::Meta::List(l) => {
-                l.nested.into_iter().find_map(|m| {
+                l.nested.into_iter().map(|m| {
                     match m {
                         syn::NestedMeta::Meta(ref m) => {
                             match m {
                                 syn::Meta::NameValue(ref kv) => {
                                     if kv.ident == "each" {
                                         match kv.lit {
-                                            syn::Lit::Str(ref s) => Some(Ident::new(&s.value(), proc_macro2::Span::call_site())),
-                                            _ => None,
+                                            syn::Lit::Str(ref s) => {
+                                                Ok((
+                                                    f.ident.clone().unwrap(),
+                                                    Ident::new(&s.value(), proc_macro2::Span::call_site()),
+                                                ))
+                                            },
+                                            _ => Err(syn::Error::new_spanned(kv.lit.clone(), "expected each to be a string").to_compile_error()),
                                         }
                                     } else {
-                                        None
+                                        Err(syn::Error::new_spanned(kv.ident.clone(), format!("unrecognized builder attribute `{}`", kv.ident)).to_compile_error())
                                     }
                                 },
-                                _ => None,
+                                _ => Err(syn::Error::new_spanned(m, "expected builder attribute to be a key value").to_compile_error()),
                             }
                         },
-                        _ => None,
+                        _ => Err(syn::Error::new_spanned(m, "expected builder attribute to be metadata, got literal instead").to_compile_error()),
+                    }
+                }).collect::<Result<Vec<(_, _)>, _>>().and_then(|v| {
+                    if v.len() == 1 {
+                        Ok(v.into_iter().next().unwrap())
+                    } else {
+                        Err(syn::Error::new_spanned(attr, "expected `each` to be present only once").to_compile_error())
                     }
                 })
             },
-            _ => None,
-        };
-        name.map(|name| (f.ident.clone().unwrap(), name))
-    }).collect::<BTreeMap<_, _>>();
-    if hm.len() == builderfields.len() {
-        Some(hm)
-    } else {
-        None
-    }
+            _ => Err(syn::Error::new_spanned(attr, "expected builder attribute to be a list").to_compile_error()),
+        }
+    }).collect()
 }
