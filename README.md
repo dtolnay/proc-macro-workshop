@@ -10,6 +10,22 @@ by other authors.*
 
 <br>
 
+## Contents
+
+- [**Suggested prerequisites**](#suggested-prerequisites)
+- [**Projects**](#projects) — Introduction to each of the projects
+  - [**Derive macro:** `derive(Builder)`](#derive-macro-derivebuilder)
+  - [**Derive macro:** `derive(CustomDebug)`](#derive-macro-derivecustomdebug)
+  - [**Function-like macro:** `seq!`](#function-like-macro-seq)
+  - [**Attribute macro:** `#[sorted]`](#attribute-macro-sorted)
+  - [**Attribute macro:** `#[bitfield]`](#attribute-macro-bitfield)
+  - [**Project recommendations**](#project-recommendations) — What to work on
+    depending on your interests
+- [**Test harness**](#test-harness) — Explanation of how testing is set up
+- [**Workflow**](#workflow) — Recommended way to work through the workshop
+
+<br>
+
 ## Suggested prerequisites
 
 This workshop covers attribute macros, derive macros, and function-like
