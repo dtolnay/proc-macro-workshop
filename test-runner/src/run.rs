@@ -2,13 +2,13 @@ use std::collections::BTreeMap as Map;
 use std::env;
 use std::ffi::OsStr;
 use std::fs::{self, File};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use super::{Expected, Runner, Test};
 use crate::banner;
 use crate::cargo;
 use crate::error::{Error, Result};
-use crate::manifest::{Bin, Dependency, Edition, Manifest, Package, Config, Build};
+use crate::manifest::{Bin, Dependency, Edition, Manifest, Package, Config, Build, Workspace};
 use crate::message;
 use crate::normalize;
 
@@ -49,21 +49,22 @@ impl Runner {
         let crate_name = env::var("CARGO_PKG_NAME").map_err(Error::PkgName)?;
         let project = format!("{}-tests", crate_name);
 
-        let manifest = self.make_manifest(crate_name, &project);
+        let manifest = self.make_manifest(crate_name, &project)?;
         let manifest_toml = toml::to_string(&manifest)?;
 
         let config = self.make_config();
         let config_toml = toml::to_string(&config)?;
 
-        fs::create_dir_all("target/tests/.cargo")?;
-        fs::write("target/tests/Cargo.toml", manifest_toml)?;
-        fs::write("target/tests/.cargo/config", config_toml)?;
-        fs::write("target/tests/main.rs", b"fn main() {}\n")?;
+        let target_dir = cargo::target_dir()?;
+        fs::create_dir_all(target_dir.join("tests/.cargo"))?;
+        fs::write(target_dir.join("tests/Cargo.toml"), manifest_toml)?;
+        fs::write(target_dir.join("tests/.cargo/config"), config_toml)?;
+        fs::write(target_dir.join("tests/main.rs"), b"fn main() {}\n")?;
 
         cargo::build_dependencies(&project)
     }
 
-    fn make_manifest(&self, crate_name: String, project: &str) -> Manifest {
+    fn make_manifest(&self, crate_name: String, project: &str) -> Result<Manifest> {
         let mut manifest = Manifest {
             package: Package {
                 name: project.to_owned(),
@@ -73,13 +74,16 @@ impl Runner {
             },
             dependencies: Map::new(),
             bins: Vec::new(),
+            workspace: Some(Workspace {}),
         };
+
+        let cwd = env::current_dir()?;
 
         manifest.dependencies.insert(
             crate_name,
             Dependency {
                 version: None,
-                path: Some("../..".to_owned()),
+                path: Some(cwd.display().to_string()),
                 features: Vec::new(),
             },
         );
@@ -100,11 +104,11 @@ impl Runner {
         for test in &self.tests {
             manifest.bins.push(Bin {
                 name: test.name(),
-                path: test.source_path(),
+                path: cwd.join(&test.path),
             });
         }
 
-        manifest
+        Ok(manifest)
     }
 
     fn make_config(&self) -> Config {
@@ -129,10 +133,6 @@ impl Test {
             .to_owned()
             .to_string_lossy()
             .replace('-', "_")
-    }
-
-    fn source_path(&self) -> PathBuf {
-        Path::new("../..").join(&self.path)
     }
 
     fn run(&self) -> Result<()> {
