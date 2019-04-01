@@ -1,16 +1,6 @@
-// Here we add the final features of `#[stored]`, support for underscore
-// patterns.
-//
-// In `#[sorted]` on `match` statements you may not always want to `match` on
-// all variants. We'll want to support a feature that, optionally, the last
-// pattern can be a wildcard variant. All other arms should still be sorted
-// though!
-//
-//
-// Resources:
-//
-//  - The `Pat` struct definition
-//    https://docs.rs/syn/0.15/syn/enum.Pat.html
+// There is one other common type of pattern that would be nice to support --
+// the wildcard or underscore pattern. The #[sorted] macro should check that if
+// a wildcard pattern is present then it is the last one.
 
 use sorted::sorted;
 

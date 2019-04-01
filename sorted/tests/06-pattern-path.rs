@@ -1,21 +1,17 @@
-// Now that we've got the `#[sorted]` attribute working, let's soup it up a bit!
-// This test is the same as the previous except that the arms of the `match`
-// statement are using a path instead of a bare identifier for the enum name.
-// Here `Error::Io` and `Error::Fmt` should be considered unsorted because `Io`
-// should be listed after `Fmt`.
+// When we checked enum definitions for sortedness, it was sufficient to compare
+// a single identifier (the name of the variant) for each variant. Match
+// expressions are different in that each arm may have a pattern that consists
+// of more than just one identifier.
 //
-// You'll want to take a closer look at `Pat` from before to handle more than
-// just `Pat::Ident` but also `Pat::Path`. Only the last element of the `Path`
-// will be used for sorting here.
+// Ensure that patterns consisting of a path are correctly tested for
+// sortedness. These patterns will be of type Pat::Path, Pat::TupleStruct, or
+// Pat::Struct.
 //
 //
 // Resources:
 //
-//  - The `Pat` struct definition
-//    https://docs.rs/syn/0.15/syn/enum.Pat.html
-//
-//  - The `Path` struct definition
-//    https://docs.rs/syn/0.15/syn/struct.Path.html
+//   - The syn::Pat syntax tree which forms the left hand side of a match arm:
+//     https://docs.rs/syn/0.15/syn/enum.Pat.html
 
 use sorted::sorted;
 

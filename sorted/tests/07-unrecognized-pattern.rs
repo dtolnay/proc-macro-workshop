@@ -1,20 +1,9 @@
-// Let's add some error checking to the `#[sorted]` attribute on `match`
-// statements. We aren't going to support all sorts of patterns in our macro,
-// just Ident/Path looking patterns.
+// The macro won't need to define what it means for other sorts of patterns to
+// be sorted. It should be fine to trigger an error if any of the patterns is
+// not something that can be compared by path.
 //
-// Be sure to generate an error message for unknown variants which is readable
-// and understandable!
-//
-// If you're feeling extra intrepid you can try to generate multiple errors
-// here and place an error on each `match` arm that has an unsupported pattern.
-// To do this you'll still use `syn::Error` but you'll need to generate
-// multiple `Error` structs and store them somewhere to get emitted!
-//
-//
-// Resources:
-//
-//  - The `Pat` struct definition
-//    https://docs.rs/syn/0.15/syn/enum.Pat.html
+// Be sure that the resulting error message is understandable and placed
+// correctly underlining the unsupported pattern.
 
 #[sorted::check]
 fn f(bytes: &[u8]) -> Option<u8> {
