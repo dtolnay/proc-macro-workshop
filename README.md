@@ -23,6 +23,7 @@ by other authors.*
     depending on your interests
 - [**Test harness**](#test-harness) — Explanation of how testing is set up
 - [**Workflow**](#workflow) — Recommended way to work through the workshop
+- [**Debugging tips**](#debugging-tips)
 
 <br>
 
@@ -405,6 +406,43 @@ again so that the output is written to *wip*, and then move the new output from
 <img src="https://user-images.githubusercontent.com/1940490/55197642-ebd19700-5191-11e9-8f00-2d7c5f4be1a9.png" width="600">
 </a>
 </p>
+
+<br>
+
+## Debugging tips
+
+To look at what code a macro is expanding into, install the [cargo expand] Cargo
+subcommand and then run `cargo expand` in the repository root (outside of any of
+the project directories) to expand the main.rs file in that directory. You can
+copy any of the test cases into this main.rs and tweak it as you iterate on the
+macro.
+
+[cargo expand]: https://github.com/dtolnay/cargo-expand
+
+If a macro is emitting syntactically invalid code (not just code that fails
+type-checking) then cargo expand will not be able to show it. Instead have the
+macro print its generated TokenStream to stderr before returning the tokens.
+
+```rust
+eprintln!("TOKENS: {}", tokens);
+```
+
+Then a `cargo check` in the repository root (if you are iterating using main.rs)
+or `cargo test` in the corresponding project directory will display this output
+during macro expansion.
+
+Stderr is also a helpful way to see the structure of the syntax tree that gets
+parsed from the input of the macro.
+
+```rust
+eprintln!("INPUT: {:#?}", syntax_tree);
+```
+
+Note that in order for Syn's syntax tree types to provide Debug impls, you will
+need to set `features = ["extra-traits"]` on the dependency on Syn. This is
+because adding hundreds of Debug impls adds an appreciable amount of compile
+time to Syn, and we really only need this enabled while doing development on a
+macro rather than when the finished macro is published to users.
 
 <br>
 
