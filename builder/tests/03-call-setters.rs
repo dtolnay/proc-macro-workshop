@@ -4,6 +4,7 @@
 //     impl CommandBuilder {
 //         fn executable(&mut self, executable: String) -> &mut Self {
 //             self.executable = Some(executable);
+//             self
 //         }
 //
 //         ...
