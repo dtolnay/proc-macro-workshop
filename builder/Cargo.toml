@@ -16,4 +16,7 @@ path = "tests/progress.rs"
 workshop-test-runner = { path = "../test-runner" }
 
 [dependencies]
+syn = "0.15.30"
+quote = "0.6.11"
+proc-macro2 = "0.4.27"
 # TODO
