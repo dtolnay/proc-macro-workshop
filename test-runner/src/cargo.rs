@@ -26,15 +26,14 @@ pub fn build_dependencies(project: &str) -> Result<()> {
 }
 
 pub fn build_test(name: &str) -> Result<Output> {
-    if let Ok(crate_name) = env::var("CARGO_PKG_NAME") {
-        let project = format!("{}-tests", crate_name);
-        let _ = cargo()?
-            .arg("clean")
-            .arg("--package")
-            .arg(project)
-            .arg("--color=never")
-            .status();
-    }
+    let crate_name = env::var("CARGO_PKG_NAME").map_err(Error::PkgName)?;
+    let project = format!("{}-tests", crate_name);
+    let _ = cargo()?
+        .arg("clean")
+        .arg("--package")
+        .arg(project)
+        .arg("--color=never")
+        .status();
 
     cargo()?
         .arg("build")
