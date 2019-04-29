@@ -34,9 +34,7 @@ impl TestCases {
     #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         TestCases {
-            runner: RefCell::new(Runner {
-                tests: Vec::new(),
-            }),
+            runner: RefCell::new(Runner { tests: Vec::new() }),
         }
     }
 

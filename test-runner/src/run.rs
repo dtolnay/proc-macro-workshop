@@ -8,7 +8,7 @@ use super::{Expected, Runner, Test};
 use crate::banner;
 use crate::cargo;
 use crate::error::{Error, Result};
-use crate::manifest::{Bin, Dependency, Edition, Manifest, Package, Config, Build, Workspace};
+use crate::manifest::{Bin, Build, Config, Dependency, Edition, Manifest, Package, Workspace};
 use crate::message;
 use crate::normalize;
 

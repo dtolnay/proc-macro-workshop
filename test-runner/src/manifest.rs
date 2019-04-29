@@ -54,5 +54,4 @@ pub struct Build {
 }
 
 #[derive(Serialize)]
-pub struct Workspace {
-}
+pub struct Workspace {}
