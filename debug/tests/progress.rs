@@ -8,4 +8,5 @@ fn tests() {
     //t.pass("tests/05-phantom-data.rs");
     //t.pass("tests/06-bound-trouble.rs");
     //t.pass("tests/07-associated-type.rs");
+    //t.pass("tests/08-escape-hatch.rs");
 }
