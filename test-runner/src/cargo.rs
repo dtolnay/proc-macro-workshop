@@ -1,5 +1,5 @@
 use std::env;
-use std::process::{Command, Output};
+use std::process::{Command, Output, Stdio};
 
 use crate::error::{Error, Result};
 
@@ -33,6 +33,8 @@ pub fn build_test(name: &str) -> Result<Output> {
         .arg("--package")
         .arg(project)
         .arg("--color=never")
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
         .status();
 
     cargo()?
