@@ -16,6 +16,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
         },
         _ => unimplemented!(),
     };
+    let phantoms_data = get_phantoms_data(&fields);
     let fields_format = match get_fields_format(&fields) {
         Ok(f) => f,
         Err(e) => return e.into(),
@@ -25,7 +26,9 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let mut generics = input.generics.clone();
 
     for ty_param in generics.type_params_mut() {
-        ty_param.bounds.push(parse_quote!(std::fmt::Debug));
+        if !phantoms_data.contains(&ty_param.ident) {
+            ty_param.bounds.push(parse_quote!(std::fmt::Debug));
+        }
     }
 
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
@@ -46,18 +49,21 @@ fn expand_fields(
     n: &syn::FieldsNamed,
     fmts: &std::collections::HashMap<Ident, Lit>,
 ) -> proc_macro2::TokenStream {
-    n.named.iter().map(|f| {
-        let ident = f.ident.as_ref().unwrap();
-        let name = ident.to_string();
-        match fmts.get(ident) {
-            Some(f) => quote! {
-                .field(#name, &format_args!(#f, &self.#ident))
-            },
-            None => quote! {
-                .field(#name, &self.#ident)
-            },
-        }
-    }).collect()
+    n.named
+        .iter()
+        .map(|f| {
+            let ident = f.ident.as_ref().unwrap();
+            let name = ident.to_string();
+            match fmts.get(ident) {
+                Some(f) => quote! {
+                    .field(#name, &format_args!(#f, &self.#ident))
+                },
+                None => quote! {
+                    .field(#name, &self.#ident)
+                },
+            }
+        })
+        .collect()
 }
 
 fn get_fields_format(
@@ -78,6 +84,35 @@ fn get_fields_format(
                 .to_compile_error()),
                 Err(e) => Err(e.to_compile_error()),
             })
+        })
+        .collect()
+}
+
+fn get_phantoms_data(fields: &syn::FieldsNamed) -> std::collections::HashSet<Ident> {
+    fields
+        .named
+        .iter()
+        .filter_map(|f| match f.ty {
+            syn::Type::Path(syn::TypePath {
+                path: syn::Path { ref segments, .. },
+                ..
+            }) => segments
+                .first()
+                .filter(|s| s.value().ident == "PhantomData")
+                .map(|s| match s.value().arguments {
+                    syn::PathArguments::AngleBracketed(syn::AngleBracketedGenericArguments {
+                        ref args,
+                        ..
+                    }) => match args[0] {
+                        syn::GenericArgument::Type(syn::Type::Path(syn::TypePath {
+                            path: syn::Path { ref segments, .. },
+                            ..
+                        })) => segments[0].ident.clone(),
+                        _ => unreachable!(),
+                    },
+                    _ => unreachable!(),
+                }),
+            _ => None,
         })
         .collect()
 }
