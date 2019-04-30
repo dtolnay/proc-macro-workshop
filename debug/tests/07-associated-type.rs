@@ -10,8 +10,8 @@
 //     {...}
 //
 // You can identify associated types as any syn::TypePath in which the first
-// path component is one of the type parameters, or in which the QSelf is one of
-// the type parameters.
+// path segment is one of the type parameters and there is more than one
+// segment.
 //
 //
 // Resources:
@@ -31,11 +31,6 @@ pub struct Field<T: Trait> {
     values: Vec<T::Value>,
 }
 
-#[derive(CustomDebug)]
-pub struct FieldQ<T: Trait> {
-    values: Vec<<T as Trait>::Value>,
-}
-
 fn assert_debug<F: Debug>() {}
 
 fn main() {
@@ -47,5 +42,4 @@ fn main() {
     }
 
     assert_debug::<Field<Id>>();
-    assert_debug::<FieldQ<Id>>();
 }
