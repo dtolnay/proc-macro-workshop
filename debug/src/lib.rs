@@ -2,7 +2,7 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
-use quote::{quote, ToTokens};
+use quote::quote;
 use syn::{parse_macro_input, parse_quote, DeriveInput, Ident, Lit};
 
 #[proc_macro_derive(CustomDebug, attributes(debug))]
@@ -46,7 +46,7 @@ fn expand_fields(
     n: &syn::FieldsNamed,
     fmts: &std::collections::HashMap<Ident, Lit>,
 ) -> proc_macro2::TokenStream {
-    let fields = n.named.iter().map(|f| {
+    n.named.iter().map(|f| {
         let ident = f.ident.as_ref().unwrap();
         let name = ident.to_string();
         match fmts.get(ident) {
@@ -57,47 +57,27 @@ fn expand_fields(
                 .field(#name, &self.#ident)
             },
         }
-    });
-    (quote! {
-        #(#fields)*
-    })
-    .into_token_stream()
+    }).collect()
 }
 
 fn get_fields_format(
     fields: &syn::FieldsNamed,
 ) -> Result<std::collections::HashMap<Ident, Lit>, TokenStream2> {
-    let debugfields = fields
+    fields
         .named
         .iter()
-        .filter(|f| {
-            f.attrs.len() > 0
-                && f.attrs
-                    .iter()
-                    .any(|attr| &attr.path.segments[0].ident.to_string() == "debug")
-        })
-        .collect::<Vec<_>>();
-    debugfields
-        .into_iter()
-        .map(|f| {
-            let attr = f
-                .attrs
-                .iter()
-                .find(|attr| &attr.path.segments[0].ident.to_string() == "debug")
-                .unwrap();
-            let meta = attr.parse_meta().unwrap();
-            let nv = match meta {
-                syn::Meta::NameValue(nv) => Ok(nv),
-                _ => Err(syn::Error::new_spanned(
+        .filter_map(|f| {
+            let attr = f.attrs.iter().find(|attr| attr.path.is_ident("debug"))?;
+            let ident = f.ident.clone().unwrap();
+            Some(match attr.parse_meta() {
+                Ok(syn::Meta::NameValue(nv)) => Ok((ident, nv.lit)),
+                Ok(_) => Err(syn::Error::new_spanned(
                     attr,
                     "expected debug attribute to be a name value",
                 )
                 .to_compile_error()),
-            }?;
-            if nv.ident.to_string() != "debug" {
-                unreachable!();
-            }
-            Ok((f.ident.clone().unwrap(), nv.lit))
+                Err(e) => Err(e.to_compile_error()),
+            })
         })
         .collect()
 }
