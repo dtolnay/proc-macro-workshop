@@ -188,7 +188,10 @@ impl Test {
             return Ok(());
         }
 
-        let expected = fs::read_to_string(stderr_path).map_err(Error::ReadStderr)?;
+        let expected = fs::read_to_string(stderr_path)
+            .map_err(Error::ReadStderr)?
+            .replace("\r\n", "\n");
+
         if expected == stderr {
             message::nice();
             Ok(())

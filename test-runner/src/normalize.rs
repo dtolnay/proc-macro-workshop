@@ -13,9 +13,12 @@ pub fn trim<S: AsRef<[u8]>>(output: S) -> String {
 }
 
 pub fn diagnostics(output: Vec<u8>) -> String {
+    let mut from_bytes = String::from_utf8_lossy(&output).to_string();
+    from_bytes = from_bytes.replace("\r\n", "\n");
+
     let mut normalized = String::new();
 
-    for line in String::from_utf8_lossy(&output).to_string().lines() {
+    for line in from_bytes.lines() {
         if keep(line) {
             normalized += line;
             if !normalized.ends_with("\n\n") {
@@ -28,7 +31,7 @@ pub fn diagnostics(output: Vec<u8>) -> String {
 }
 
 fn keep(line: &str) -> bool {
-    if line.trim_start().starts_with("--> ../../") {
+    if line.trim_start().starts_with("--> ../..") {
         return false;
     }
 
