@@ -8,7 +8,7 @@ use super::{Expected, Runner, Test};
 use crate::banner;
 use crate::cargo;
 use crate::error::{Error, Result};
-use crate::manifest::{Bin, Dependency, Edition, Manifest, Package, Config, Build};
+use crate::manifest::{Bin, Build, Config, Dependency, Edition, Manifest, Package, Workspace};
 use crate::message;
 use crate::normalize;
 
@@ -49,21 +49,21 @@ impl Runner {
         let crate_name = env::var("CARGO_PKG_NAME").map_err(Error::PkgName)?;
         let project = format!("{}-tests", crate_name);
 
-        let manifest = self.make_manifest(crate_name, &project);
+        let manifest = self.make_manifest(crate_name, &project)?;
         let manifest_toml = toml::to_string(&manifest)?;
 
         let config = self.make_config();
         let config_toml = toml::to_string(&config)?;
 
-        fs::create_dir_all("target/tests/.cargo")?;
-        fs::write("target/tests/Cargo.toml", manifest_toml)?;
-        fs::write("target/tests/.cargo/config", config_toml)?;
-        fs::write("target/tests/main.rs", b"fn main() {}\n")?;
+        fs::create_dir_all("../target/tests/.cargo")?;
+        fs::write("../target/tests/Cargo.toml", manifest_toml)?;
+        fs::write("../target/tests/.cargo/config", config_toml)?;
+        fs::write("../target/tests/main.rs", b"fn main() {}\n")?;
 
         cargo::build_dependencies(&project)
     }
 
-    fn make_manifest(&self, crate_name: String, project: &str) -> Manifest {
+    fn make_manifest(&self, crate_name: String, project: &str) -> Result<Manifest> {
         let mut manifest = Manifest {
             package: Package {
                 name: project.to_owned(),
@@ -73,13 +73,16 @@ impl Runner {
             },
             dependencies: Map::new(),
             bins: Vec::new(),
+            workspace: Some(Workspace {}),
         };
+
+        let project_dir = project_dir_relative()?;
 
         manifest.dependencies.insert(
             crate_name,
             Dependency {
                 version: None,
-                path: Some("../..".to_owned()),
+                path: Some(project_dir.clone()),
                 features: Vec::new(),
             },
         );
@@ -100,11 +103,11 @@ impl Runner {
         for test in &self.tests {
             manifest.bins.push(Bin {
                 name: test.name(),
-                path: test.source_path(),
+                path: project_dir.join(&test.path),
             });
         }
 
-        manifest
+        Ok(manifest)
     }
 
     fn make_config(&self) -> Config {
@@ -129,10 +132,6 @@ impl Test {
             .to_owned()
             .to_string_lossy()
             .replace('-', "_")
-    }
-
-    fn source_path(&self) -> PathBuf {
-        Path::new("../..").join(&self.path)
     }
 
     fn run(&self) -> Result<()> {
@@ -189,7 +188,10 @@ impl Test {
             return Ok(());
         }
 
-        let expected = fs::read_to_string(stderr_path).map_err(Error::ReadStderr)?;
+        let expected = fs::read_to_string(stderr_path)
+            .map_err(Error::ReadStderr)?
+            .replace("\r\n", "\n");
+
         if expected == stderr {
             message::nice();
             Ok(())
@@ -198,6 +200,14 @@ impl Test {
             Err(Error::Mismatch)
         }
     }
+}
+
+// Path to builder, or seq, etc (whichever is being tested).
+fn project_dir_relative() -> Result<PathBuf> {
+    let project_dir = env::current_dir()?;
+    let name = project_dir.as_path().file_name().ok_or(Error::ProjectDir)?;
+    let relative = Path::new("../..").join(name);
+    Ok(relative)
 }
 
 fn check_exists(path: &Path) -> Result<()> {

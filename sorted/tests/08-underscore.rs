@@ -1,3 +1,7 @@
+// There is one other common type of pattern that would be nice to support --
+// the wildcard or underscore pattern. The #[sorted] macro should check that if
+// a wildcard pattern is present then it is the last one.
+
 use sorted::sorted;
 
 #[sorted]

@@ -10,6 +10,23 @@ by other authors.*
 
 <br>
 
+## Contents
+
+- [**Suggested prerequisites**](#suggested-prerequisites)
+- [**Projects**](#projects) — Introduction to each of the projects
+  - [**Derive macro:** `derive(Builder)`](#derive-macro-derivebuilder)
+  - [**Derive macro:** `derive(CustomDebug)`](#derive-macro-derivecustomdebug)
+  - [**Function-like macro:** `seq!`](#function-like-macro-seq)
+  - [**Attribute macro:** `#[sorted]`](#attribute-macro-sorted)
+  - [**Attribute macro:** `#[bitfield]`](#attribute-macro-bitfield)
+  - [**Project recommendations**](#project-recommendations) — What to work on
+    depending on your interests
+- [**Test harness**](#test-harness) — Explanation of how testing is set up
+- [**Workflow**](#workflow) — Recommended way to work through the workshop
+- [**Debugging tips**](#debugging-tips)
+
+<br>
+
 ## Suggested prerequisites
 
 This workshop covers attribute macros, derive macros, and function-like
@@ -213,8 +230,7 @@ For example, the following invocation builds a struct with a total size of 32
 bits or 4 bytes. It places field `a` in the least significant bit of the first
 byte, field `b` in the next three least significant bits, field `c` in the
 remaining four most significant bits of the first byte, and field `d` spanning
-the next three bytes. The least significant byte of `d` will be held in the
-second byte of our struct, adjacent to the byte holding the first three fields.
+the next three bytes.
 
 ```rust
 use bitfield::*;
@@ -390,6 +406,43 @@ again so that the output is written to *wip*, and then move the new output from
 <img src="https://user-images.githubusercontent.com/1940490/55197642-ebd19700-5191-11e9-8f00-2d7c5f4be1a9.png" width="600">
 </a>
 </p>
+
+<br>
+
+## Debugging tips
+
+To look at what code a macro is expanding into, install the [cargo expand] Cargo
+subcommand and then run `cargo expand` in the repository root (outside of any of
+the project directories) to expand the main.rs file in that directory. You can
+copy any of the test cases into this main.rs and tweak it as you iterate on the
+macro.
+
+[cargo expand]: https://github.com/dtolnay/cargo-expand
+
+If a macro is emitting syntactically invalid code (not just code that fails
+type-checking) then cargo expand will not be able to show it. Instead have the
+macro print its generated TokenStream to stderr before returning the tokens.
+
+```rust
+eprintln!("TOKENS: {}", tokens);
+```
+
+Then a `cargo check` in the repository root (if you are iterating using main.rs)
+or `cargo test` in the corresponding project directory will display this output
+during macro expansion.
+
+Stderr is also a helpful way to see the structure of the syntax tree that gets
+parsed from the input of the macro.
+
+```rust
+eprintln!("INPUT: {:#?}", syntax_tree);
+```
+
+Note that in order for Syn's syntax tree types to provide Debug impls, you will
+need to set `features = ["extra-traits"]` on the dependency on Syn. This is
+because adding hundreds of Debug impls adds an appreciable amount of compile
+time to Syn, and we really only need this enabled while doing development on a
+macro rather than when the finished macro is published to users.
 
 <br>
 

@@ -9,6 +9,8 @@ pub struct Manifest {
     pub dependencies: Map<String, Dependency>,
     #[serde(rename = "bin")]
     pub bins: Vec<Bin>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub workspace: Option<Workspace>,
 }
 
 #[derive(Serialize)]
@@ -36,7 +38,7 @@ pub struct Dependency {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub path: Option<String>,
+    pub path: Option<PathBuf>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub features: Vec<String>,
 }
@@ -50,3 +52,6 @@ pub struct Config {
 pub struct Build {
     pub rustflags: Vec<String>,
 }
+
+#[derive(Serialize)]
+pub struct Workspace {}
