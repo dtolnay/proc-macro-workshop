@@ -1,6 +1,9 @@
 #[macro_use]
 mod term;
 
+#[macro_use]
+mod path;
+
 mod banner;
 mod cargo;
 mod error;

@@ -69,10 +69,10 @@ impl Runner {
         let config = self.make_config();
         let config_toml = toml::to_string(&config)?;
 
-        fs::create_dir_all("../target/tests/.cargo")?;
-        fs::write("../target/tests/Cargo.toml", manifest_toml)?;
-        fs::write("../target/tests/.cargo/config", config_toml)?;
-        fs::write("../target/tests/main.rs", b"fn main() {}\n")?;
+        fs::create_dir_all(path!(project.dir / ".cargo"))?;
+        fs::write(path!(project.dir / ".cargo" / "config"), config_toml)?;
+        fs::write(path!(project.dir / "Cargo.toml"), manifest_toml)?;
+        fs::write(path!(project.dir / "main.rs"), b"fn main() {}\n")?;
 
         cargo::build_dependencies(&project)?;
 
