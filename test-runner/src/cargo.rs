@@ -1,3 +1,5 @@
+use serde::Deserialize;
+use std::path::PathBuf;
 use std::process::{Command, Output, Stdio};
 
 use crate::error::{Error, Result};
@@ -6,7 +8,7 @@ use crate::run::Project;
 fn cargo(project: &Project) -> Command {
     let mut cmd = Command::new("cargo");
     cmd.current_dir(&project.dir);
-    cmd.env("CARGO_TARGET_DIR", "..");
+    cmd.env("CARGO_TARGET_DIR", &project.target_dir);
     cmd
 }
 
@@ -54,4 +56,21 @@ pub fn run_test(project: &Project, name: &str) -> Result<Output> {
         .arg("--color=never")
         .output()
         .map_err(Error::Cargo)
+}
+
+pub fn target_dir() -> Result<PathBuf> {
+    #[derive(Deserialize)]
+    struct Metadata {
+        target_directory: PathBuf,
+    }
+
+    let output = Command::new("cargo")
+        .arg("metadata")
+        .arg("--format-version=1")
+        .output()
+        .map_err(Error::Cargo)?;
+
+    let metadata: Metadata = serde_json::from_slice(&output.stdout).map_err(Error::Metadata)?;
+
+    Ok(metadata.target_directory)
 }

@@ -16,6 +16,7 @@ const IGNORED_LINTS: &[&str] = &["dead_code"];
 
 pub struct Project {
     pub dir: PathBuf,
+    pub target_dir: PathBuf,
     pub name: String,
 }
 
@@ -51,15 +52,15 @@ impl Runner {
     }
 
     fn prepare(&self) -> Result<Project> {
+        let target_dir = cargo::target_dir()?;
         let crate_name = env::var("CARGO_PKG_NAME").map_err(Error::PkgName)?;
 
         let project = Project {
-            // TODO: Get target_directory from cargo metadata.
-
             // TODO: Include CARGO_PKG_NAME component so that different projects
             // in the same workspace do not stomp on each other.
 
-            dir: PathBuf::from("../target/tests"),
+            dir: path!(target_dir / "tests"),
+            target_dir,
             name: format!("{}-tests", crate_name),
         };
 
