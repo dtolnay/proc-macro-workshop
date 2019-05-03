@@ -1,18 +1,17 @@
-use std::env;
 use std::process::{Command, Output, Stdio};
 
 use crate::error::{Error, Result};
 use crate::run::Project;
 
-fn cargo() -> Result<Command> {
+fn cargo(project: &Project) -> Command {
     let mut cmd = Command::new("cargo");
-    cmd.current_dir("../target/tests");
+    cmd.current_dir(&project.dir);
     cmd.env("CARGO_TARGET_DIR", "..");
-    Ok(cmd)
+    cmd
 }
 
 pub fn build_dependencies(project: &Project) -> Result<()> {
-    let status = cargo()?
+    let status = cargo(project)
         .arg("build")
         .arg("--bin")
         .arg(&project.name)
@@ -26,19 +25,17 @@ pub fn build_dependencies(project: &Project) -> Result<()> {
     }
 }
 
-pub fn build_test(name: &str) -> Result<Output> {
-    let crate_name = env::var("CARGO_PKG_NAME").map_err(Error::PkgName)?;
-    let project = format!("{}-tests", crate_name);
-    let _ = cargo()?
+pub fn build_test(project: &Project, name: &str) -> Result<Output> {
+    let _ = cargo(project)
         .arg("clean")
         .arg("--package")
-        .arg(project)
+        .arg(&project.name)
         .arg("--color=never")
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .status();
 
-    cargo()?
+    cargo(project)
         .arg("build")
         .arg("--bin")
         .arg(name)
@@ -48,8 +45,8 @@ pub fn build_test(name: &str) -> Result<Output> {
         .map_err(Error::Cargo)
 }
 
-pub fn run_test(name: &str) -> Result<Output> {
-    cargo()?
+pub fn run_test(project: &Project, name: &str) -> Result<Output> {
+    cargo(project)
         .arg("run")
         .arg("--bin")
         .arg(name)

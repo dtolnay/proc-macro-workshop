@@ -21,10 +21,10 @@ pub struct Project {
 
 impl Runner {
     pub fn run(&mut self) {
-        if let Err(err) = self.prepare() {
+        let project = self.prepare().unwrap_or_else(|err| {
             message::prepare_fail(err);
             panic!("tests failed");
-        }
+        });
 
         println!();
         banner::colorful();
@@ -35,7 +35,7 @@ impl Runner {
             message::no_tests_enabled();
         } else {
             for test in &self.tests {
-                if let Err(err) = test.run() {
+                if let Err(err) = test.run(&project) {
                     failures += 1;
                     message::test_fail(err);
                 }
@@ -150,12 +150,12 @@ impl Test {
             .replace('-', "_")
     }
 
-    fn run(&self) -> Result<()> {
+    fn run(&self, project: &Project) -> Result<()> {
         message::begin_test(self);
         check_exists(&self.path)?;
 
         let name = self.name();
-        let output = cargo::build_test(&name)?;
+        let output = cargo::build_test(project, &name)?;
         let success = output.status.success();
         let stderr = normalize::diagnostics(output.stderr);
 
@@ -164,17 +164,17 @@ impl Test {
             Expected::CompileFail => Test::check_compile_fail,
         };
 
-        check(self, success, stderr)
+        check(self, project, success, stderr)
     }
 
-    fn check_pass(&self, success: bool, stderr: String) -> Result<()> {
+    fn check_pass(&self, project: &Project, success: bool, stderr: String) -> Result<()> {
         if !success {
             message::failed_to_build(stderr);
             return Err(Error::CargoFail);
         }
 
         let name = self.name();
-        let output = cargo::run_test(&name)?;
+        let output = cargo::run_test(project, &name)?;
         message::output(stderr, &output);
 
         if output.status.success() {
@@ -184,7 +184,7 @@ impl Test {
         }
     }
 
-    fn check_compile_fail(&self, success: bool, stderr: String) -> Result<()> {
+    fn check_compile_fail(&self, _project: &Project, success: bool, stderr: String) -> Result<()> {
         if success {
             message::should_not_have_compiled();
             message::warnings(stderr);
