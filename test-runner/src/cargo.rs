@@ -2,6 +2,7 @@ use std::env;
 use std::process::{Command, Output, Stdio};
 
 use crate::error::{Error, Result};
+use crate::run::Project;
 
 fn cargo() -> Result<Command> {
     let mut cmd = Command::new("cargo");
@@ -10,11 +11,11 @@ fn cargo() -> Result<Command> {
     Ok(cmd)
 }
 
-pub fn build_dependencies(project: &str) -> Result<()> {
+pub fn build_dependencies(project: &Project) -> Result<()> {
     let status = cargo()?
         .arg("build")
         .arg("--bin")
-        .arg(project)
+        .arg(&project.name)
         .status()
         .map_err(Error::Cargo)?;
 

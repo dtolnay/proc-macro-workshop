@@ -14,6 +14,11 @@ use crate::normalize;
 
 const IGNORED_LINTS: &[&str] = &["dead_code"];
 
+pub struct Project {
+    pub dir: PathBuf,
+    pub name: String,
+}
+
 impl Runner {
     pub fn run(&mut self) {
         if let Err(err) = self.prepare() {
@@ -45,9 +50,18 @@ impl Runner {
         }
     }
 
-    fn prepare(&self) -> Result<()> {
+    fn prepare(&self) -> Result<Project> {
         let crate_name = env::var("CARGO_PKG_NAME").map_err(Error::PkgName)?;
-        let project = format!("{}-tests", crate_name);
+
+        let project = Project {
+            // TODO: Get target_directory from cargo metadata.
+
+            // TODO: Include CARGO_PKG_NAME component so that different projects
+            // in the same workspace do not stomp on each other.
+
+            dir: PathBuf::from("../target/tests"),
+            name: format!("{}-tests", crate_name),
+        };
 
         let manifest = self.make_manifest(crate_name, &project)?;
         let manifest_toml = toml::to_string(&manifest)?;
@@ -60,13 +74,15 @@ impl Runner {
         fs::write("../target/tests/.cargo/config", config_toml)?;
         fs::write("../target/tests/main.rs", b"fn main() {}\n")?;
 
-        cargo::build_dependencies(&project)
+        cargo::build_dependencies(&project)?;
+
+        Ok(project)
     }
 
-    fn make_manifest(&self, crate_name: String, project: &str) -> Result<Manifest> {
+    fn make_manifest(&self, crate_name: String, project: &Project) -> Result<Manifest> {
         let mut manifest = Manifest {
             package: Package {
-                name: project.to_owned(),
+                name: project.name.clone(),
                 version: "0.0.0".to_owned(),
                 edition: Edition::E2018,
                 publish: false,
@@ -96,7 +112,7 @@ impl Runner {
         //
 
         manifest.bins.push(Bin {
-            name: project.to_owned(),
+            name: project.name.to_owned(),
             path: Path::new("main.rs").to_owned(),
         });
 
