@@ -31,7 +31,7 @@ pub fn diagnostics(output: Vec<u8>) -> String {
 }
 
 fn keep(line: &str) -> bool {
-    if line.trim_start().starts_with("--> ../..") {
+    if line.trim_start().starts_with("--> ") {
         return false;
     }
 

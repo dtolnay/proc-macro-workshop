@@ -93,13 +93,15 @@ impl Runner {
             workspace: Some(Workspace {}),
         };
 
-        let project_dir = project_dir_relative()?;
+        let manifest_dir = env::var_os("CARGO_MANIFEST_DIR")
+            .map(PathBuf::from)
+            .ok_or(Error::ProjectDir)?;
 
         manifest.dependencies.insert(
             crate_name,
             Dependency {
                 version: None,
-                path: Some(project_dir.clone()),
+                path: Some(manifest_dir.clone()),
                 features: Vec::new(),
             },
         );
@@ -120,7 +122,7 @@ impl Runner {
         for test in &self.tests {
             manifest.bins.push(Bin {
                 name: test.name(),
-                path: project_dir.join(&test.path),
+                path: manifest_dir.join(&test.path),
             });
         }
 
@@ -217,14 +219,6 @@ impl Test {
             Err(Error::Mismatch)
         }
     }
-}
-
-// Path to builder, or seq, etc (whichever is being tested).
-fn project_dir_relative() -> Result<PathBuf> {
-    let project_dir = env::current_dir()?;
-    let name = project_dir.as_path().file_name().ok_or(Error::ProjectDir)?;
-    let relative = Path::new("../..").join(name);
-    Ok(relative)
 }
 
 fn check_exists(path: &Path) -> Result<()> {
