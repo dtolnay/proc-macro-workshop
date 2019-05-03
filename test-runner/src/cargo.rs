@@ -5,8 +5,12 @@ use std::process::{Command, Output, Stdio};
 use crate::error::{Error, Result};
 use crate::run::Project;
 
+fn raw_cargo() -> Command {
+    Command::new(option_env!("CARGO").unwrap_or("cargo"))
+}
+
 fn cargo(project: &Project) -> Command {
-    let mut cmd = Command::new("cargo");
+    let mut cmd = raw_cargo();
     cmd.current_dir(&project.dir);
     cmd.env("CARGO_TARGET_DIR", &project.target_dir);
     cmd
@@ -64,7 +68,7 @@ pub fn target_dir() -> Result<PathBuf> {
         target_directory: PathBuf,
     }
 
-    let output = Command::new("cargo")
+    let output = raw_cargo()
         .arg("metadata")
         .arg("--format-version=1")
         .output()
