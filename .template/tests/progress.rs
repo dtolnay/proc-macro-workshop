@@ -1,6 +1,6 @@
 #[test]
 fn tests() {
-    let t = workshop::TestCases::new();
+    let t = trybuild::TestCases::new();
 
     // TODO: add tests
     //

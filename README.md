@@ -334,9 +334,10 @@ detect a problem at compile time; Cargo isn't able to say that failing to
 compile is considered a success, and isn't able to compare that the error
 message produced by the compiler is exactly what we expect.
 
-The project skeletons in this repository use a custom test harness written
-specifically for my procedural macros workshop at the 2019 Rust Latam
-conference, though potentially useful elsewhere with a bit of work.
+The project skeletons in this repository use an alternative test harness called
+[trybuild].
+
+[trybuild]: https://github.com/dtolnay/trybuild
 
 <p align="center">
 <a href="#test-harness">
@@ -346,8 +347,7 @@ conference, though potentially useful elsewhere with a bit of work.
 
 The test harness is geared toward iterating on the implementation of a
 procedural macro, observing the errors emitted by failed executions of the
-macro, and testing that those errors are as expected. The source of the test
-harness can be found under the <kbd>test-runner</kbd> directory.
+macro, and testing that those errors are as expected.
 
 <br>
 

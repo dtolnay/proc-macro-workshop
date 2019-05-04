@@ -13,7 +13,7 @@ name = "tests"
 path = "tests/progress.rs"
 
 [dev-dependencies]
-workshop-test-runner = { path = "../test-runner" }
+trybuild = "1.0"
 
 [dependencies]
 # TODO
