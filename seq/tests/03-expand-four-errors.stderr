@@ -1,21 +1,23 @@
 error: error number 0
+  --> $DIR/03-expand-four-errors.rs:20:5
    |
 20 |     compile_error!(concat!("error number ", stringify!(N)));
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: error number 1
+  --> $DIR/03-expand-four-errors.rs:20:5
    |
 20 |     compile_error!(concat!("error number ", stringify!(N)));
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: error number 2
+  --> $DIR/03-expand-four-errors.rs:20:5
    |
 20 |     compile_error!(concat!("error number ", stringify!(N)));
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: error number 3
+  --> $DIR/03-expand-four-errors.rs:20:5
    |
 20 |     compile_error!(concat!("error number ", stringify!(N)));
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-error: aborting due to 4 previous errors
