@@ -1,0 +1,5 @@
+error: Fmt should sort before Io
+  --> $DIR/05-match-expr.rs:88:13
+   |
+88 |             Fmt(e) => write!(f, "{}", e),
+   |             ^^^

@@ -1,0 +1,5 @@
+error: expected enum or match expression
+  --> $DIR/02-not-enum.rs:31:1
+   |
+31 | #[sorted]
+   | ^^^^^^^^^

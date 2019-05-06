@@ -1,0 +1,5 @@
+error: Error::Fmt should sort before Error::Io
+  --> $DIR/06-pattern-path.rs:33:13
+   |
+33 |             Error::Fmt(e) => write!(f, "{}", e),
+   |             ^^^^^^^^^^
