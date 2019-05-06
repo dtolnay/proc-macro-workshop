@@ -7,4 +7,3 @@ rust:
 
 script:
   - cargo check
-  - cargo check --manifest-path test-runner/Cargo.toml
