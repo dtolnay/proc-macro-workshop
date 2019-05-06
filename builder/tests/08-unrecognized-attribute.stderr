@@ -1,0 +1,5 @@
+error: expected `builder(each = "...")`
+  --> $DIR/08-unrecognized-attribute.rs:22:7
+   |
+22 |     #[builder(eac = "arg")]
+   |       ^^^^^^^^^^^^^^^^^^^^
