@@ -1,0 +1,5 @@
+error: BitfieldSpecifier expected a number of variants which is a power of 2
+  --> $DIR/08-non-power-of-two.rs:10:10
+   |
+10 | #[derive(BitfieldSpecifier)]
+   |          ^^^^^^^^^^^^^^^^^
