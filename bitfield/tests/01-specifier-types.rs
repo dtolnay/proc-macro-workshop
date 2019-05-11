@@ -40,7 +40,10 @@
 //
 // Create a trait called bitfield::Specifier with an associated constant BITS,
 // and write a function-like procedural macro to define some types B1 through
-// B64 with corresponding impls of the Specifier trait.
+// B64 with corresponding impls of the Specifier trait. The B* types can be
+// anything since we don't need them to carry any meaning outside of a
+// #[bitfield] struct definition; an uninhabited enum like `pub enum B1 {}`
+// would work best.
 //
 // Be aware that crates that have the "proc-macro" crate type are not allowed to
 // export anything other than procedural macros. The project skeleton for this
