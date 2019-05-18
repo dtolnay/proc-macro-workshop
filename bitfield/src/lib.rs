@@ -268,10 +268,7 @@ impl Specifier for bool {
 impl FromBits<u8> for bool {
     #[inline(always)]
     fn from_bits(bits: Bits<u8>) -> Self {
-        // As long as `FromBits` is only used within the context of
-        // this library and throughout the macros this should be working
-        // without out of bounds values - everything besides 0 and 1.
-        unsafe { std::mem::transmute::<u8, bool>(bits.into_raw()) }
+        bits.into_raw() != 0
     }
 }
 
