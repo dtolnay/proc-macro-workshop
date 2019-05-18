@@ -112,9 +112,7 @@ pub fn generate3(input: syn::ItemEnum) -> syn::Result<TokenStream2> {
         impl IntoBits<<#enum_ident as bitfield::Specifier>::Base> for #enum_ident {
             fn into_bits(self) -> bitfield::Bits<<#enum_ident as bitfield::Specifier>::Base> {
                 bitfield::Bits(
-                    unsafe {
-                        std::mem::transmute::<_, _>(self)
-                    }
+                    self as <#enum_ident as bitfield::Specifier>::Base
                 )
             }
         }
