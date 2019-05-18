@@ -1,5 +1,9 @@
 error: BitfieldSpecifier expected a number of variants which is a power of 2
-  --> $DIR/08-non-power-of-two.rs:10:10
+  --> $DIR/08-non-power-of-two.rs:11:1
    |
-10 | #[derive(BitfieldSpecifier)]
-   |          ^^^^^^^^^^^^^^^^^
+11 | / pub enum Bad {
+12 | |     Zero,
+13 | |     One,
+14 | |     Two,
+15 | | }
+   | |_^
