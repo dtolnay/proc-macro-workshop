@@ -13,15 +13,15 @@ use proc_macro::TokenStream;
 
 #[proc_macro]
 pub fn define_specifiers(input: TokenStream) -> TokenStream {
-    define_specifiers::generate(input)
+    define_specifiers::generate(input.into()).into()
 }
 
 #[proc_macro_attribute]
 pub fn bitfield(args: TokenStream, input: TokenStream) -> TokenStream {
-    bitfield::generate(args, input)
+    bitfield::generate(args.into(), input.into()).into()
 }
 
 #[proc_macro_derive(BitfieldSpecifier)]
 pub fn bitfield_specifier(input: TokenStream) -> TokenStream {
-    bitfield_specifier::generate(input)
+    bitfield_specifier::generate(input.into()).into()
 }

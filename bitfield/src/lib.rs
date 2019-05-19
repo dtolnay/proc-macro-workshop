@@ -13,8 +13,8 @@
 pub use bitfield_impl::{
     bitfield,
     BitfieldSpecifier,
-    define_specifiers,
 };
+use bitfield_impl::define_specifiers;
 
 pub mod checks {
     pub(crate) mod private {
@@ -201,10 +201,7 @@ impl_pop_bits!(u16, u32, u64, u128);
 
 /// Trait implemented by primitives that drive bitfield manipulations generically.
 pub trait SpecifierBase: checks::private::Sealed {
-    type Base:
-        Default
-        + PushBits
-        + PopBits;
+    type Base;
 }
 
 /// Trait implemented by all bitfield specifiers.

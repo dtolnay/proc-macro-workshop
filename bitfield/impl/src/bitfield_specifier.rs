@@ -1,22 +1,17 @@
-use proc_macro::TokenStream;
 use proc_macro2::{
     Span as Span2,
     TokenStream as TokenStream2,
 };
-use syn::{
-    spanned::Spanned as _,
-    punctuated::Punctuated,
-    Token,
-};
+use syn::spanned::Spanned as _;
 use quote::{
     quote,
     quote_spanned,
 };
 
-pub fn generate(input: TokenStream) -> TokenStream {
-    match generate2(input.into()) {
-        Ok(output) => output.into(),
-        Err(err) => err.to_compile_error().into(),
+pub fn generate(input: TokenStream2) -> TokenStream2 {
+    match generate2(input) {
+        Ok(output) => output,
+        Err(err) => err.to_compile_error(),
     }
 }
 
@@ -83,10 +78,7 @@ pub fn generate3(input: syn::ItemEnum) -> syn::Result<TokenStream2> {
     }
 
     use crate::ident_ext::IdentExt as _;
-    let impl_mod_name = syn::Ident::from_str(&format!(
-        "impl_bitfield_checks_for_{}",
-        enum_ident.to_owned_string(),
-    ));
+    let impl_mod_name = syn::Ident::from_str(format!("impl_bitfield_checks_for_{}", enum_ident));
 
     Ok(quote!{
         mod #impl_mod_name {
