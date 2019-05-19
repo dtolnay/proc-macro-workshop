@@ -245,13 +245,18 @@ pub struct MyFourBytes {
 ```
 
 ```text
-                                        less significant
-                                       /             more significant
-                                      /             /
- (first byte)      (second byte)     /   (third)   /   (fourth byte)
-0 1 2 3 4 5 6 7   0 1 2 3 4 5 6 7   0 1 2 3 4 5 6 7   0 1 2 3 4 5 6 7
-|  \ /   \_ _/     \_______________________ _______________________/
-a   b      c        less significant       d       more significant
+                               least significant bit of third byte
+                                 |           most significant
+                                 |             |
+                                 |             |
+ _______________ _______________ _______________ _______________
+|  first byte   |  second byte  |  third byte   |  fourth byte  |
+|# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #|
+|_|_____|_______|_______________________________________________|
+ a   b      c                           d                    
+                 |                                             |
+                 |                                             |
+               least significant bit of d         most significant
 ```
 
 The code emitted by the `#[bitfield]` macro for this struct would be as follows.
