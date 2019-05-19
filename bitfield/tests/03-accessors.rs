@@ -1,7 +1,13 @@
 // Generate getters and setters that manipulate the right range of bits
-// corresponding to each field. Refer to the bitfield project introduction in
-// the readme for a diagram of how the bit-level mapping is expected to work;
-// the diagram uses the same field sizes as the struct in the test case below.
+// corresponding to each field.
+//
+//
+//     ║  first byte   ║  second byte  ║  third byte   ║  fourth byte  ║
+//     ╟───────────────╫───────────────╫───────────────╫───────────────╢
+//     ║▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒║
+//     ╟─╫─────╫───────╫───────────────────────────────────────────────╢
+//     ║a║  b  ║   c   ║                       d                       ║
+//
 //
 // Depending on your implementation, it's possible that this will require adding
 // some associated types, associated constants, or associated functions to your
