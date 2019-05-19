@@ -112,7 +112,7 @@ pub mod checks {
     /// Public facing trait that is implemented by bitfield specifiers to
     /// let the compiler check if all its variant discriminants are within
     /// valid bounds.
-    pub trait CheckDiscriminantInRange
+    pub trait CheckDiscriminantInRange<A>
     where
         <Self::CheckType as DispatchTrueFalse>::Out: DiscriminantInRange
     {

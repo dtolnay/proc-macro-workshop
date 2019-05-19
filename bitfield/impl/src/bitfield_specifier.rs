@@ -68,8 +68,7 @@ pub fn generate3(input: syn::ItemEnum) -> syn::Result<TokenStream2> {
             syn::Fields::Unit => {
                 let variant_ident = &variant.ident;
                 check_discriminants_tokens.extend(quote_spanned! { variant.span() =>
-                    enum #variant_ident {}
-                    impl checks::CheckDiscriminantInRange for #variant_ident {
+                    impl checks::CheckDiscriminantInRange<[(); #enum_ident::#variant_ident as usize]> for #enum_ident {
                         type CheckType = [(); ((#enum_ident::#variant_ident as usize) < (0x1 << #bits_literal)) as usize ];
                     }
                 });
@@ -77,15 +76,8 @@ pub fn generate3(input: syn::ItemEnum) -> syn::Result<TokenStream2> {
         }
     }
 
-    use crate::ident_ext::IdentExt as _;
-    let impl_mod_name = syn::Ident::from_str(format!("impl_bitfield_checks_for_{}", enum_ident));
-
     Ok(quote!{
-        mod #impl_mod_name {
-            use super::*;
-
-            #check_discriminants_tokens
-        }
+        #check_discriminants_tokens
 
         impl bitfield::Specifier for #enum_ident {
             const BITS: usize = #bits_literal;
