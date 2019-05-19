@@ -50,10 +50,10 @@ pub fn generate3(input: syn::ItemEnum) -> syn::Result<TokenStream2> {
     let enum_ident = &input.ident;
     let count_variants = input.variants.iter().count();
     if !count_variants.is_power_of_two() {
-        bail!(
-            input,
+        return Err(syn::Error::new(
+            Span2::call_site(),
             "BitfieldSpecifier expected a number of variants which is a power of 2",
-        )
+        ));
     }
     // We can take `trailing_zeros` returns type as the required amount of bits.
     let bits = count_variants.trailing_zeros();
