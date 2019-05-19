@@ -246,16 +246,16 @@ pub struct MyFourBytes {
 
 ```text
                                least significant bit of third byte
-                                 |           most significant
-                                 |             |
-                                 |             |
- _______________ _______________ _______________ _______________
-|  first byte   |  second byte  |  third byte   |  fourth byte  |
-|# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #|
-|_|_____|_______|_______________________________________________|
- a   b      c                           d                    
-                 |                                             |
-                 |                                             |
+                                 ┊           most significant
+                                 ┊             ┊
+                                 ┊             ┊
+║  first byte   ║  second byte  ║  third byte   ║  fourth byte  ║
+╟───────────────╫───────────────╫───────────────╫───────────────╢
+║▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒ ▒║
+╟─╫─────╫───────╫───────────────────────────────────────────────╢
+║a║  b  ║   c   ║                       d                       ║
+                 ┊                                             ┊
+                 ┊                                             ┊
                least significant bit of d         most significant
 ```
 
@@ -312,7 +312,7 @@ After that, it would be equally reasonable to jump to any of
 - Go for `seq!` if you are interested in parsing a custom input syntax yourself.
   The other projects will all mostly rely on parsers that have already been
   written and distributed as a library, since their input is ordinary Rust
-  syntax. 
+  syntax.
 
 - Go for `#[sorted]` if you are interested in generating diagnostics (custom
   errors) via a macro. Part of this project also covers a different way of
