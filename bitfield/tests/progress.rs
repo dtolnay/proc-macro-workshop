@@ -12,4 +12,5 @@ fn tests() {
     //t.compile_fail("tests/09-variant-out-of-range.rs");
     //t.pass("tests/10-bits-attribute.rs");
     //t.compile_fail("tests/11-bits-attribute-wrong.rs");
+    //t.pass("tests/12-accessors-edge.rs");
 }
