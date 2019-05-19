@@ -56,39 +56,55 @@ pub fn generate3(input: syn::ItemEnum) -> syn::Result<TokenStream2> {
         ));
     }
     // We can take `trailing_zeros` returns type as the required amount of bits.
-    let bits = count_variants.trailing_zeros();
-    let bits_literal = syn::LitInt::new(bits as u64, syn::IntSuffix::None, Span2::call_site());
+    let bits = count_variants.trailing_zeros() as usize;
 
-    // let mut discriminator_mask = Punctuated::<syn::Expr, Token![&&]>::new();
+    let variants = input.variants
+        .iter()
+        .filter_map(|variant| {
+            match &variant.fields {
+                syn::Fields::Unit => {
+                    Some(&variant.ident)
+                }
+                _ => None,
+            }
+        })
+        .collect::<Vec<_>>();
+
     let mut check_discriminants_tokens = quote! {};
-    for variant in input.variants.iter() {
-        match &variant.fields {
-            syn::Fields::Named(fields_named) => bail!(fields_named, "named fields in enum variants are not supported"),
-            syn::Fields::Unnamed(fields_unnamed) => bail!(fields_unnamed, "unnamed fields in enum variants are not supported"),
-            syn::Fields::Unit => {
-                let variant_ident = &variant.ident;
-                check_discriminants_tokens.extend(quote_spanned! { variant.span() =>
-                    impl checks::CheckDiscriminantInRange<[(); #enum_ident::#variant_ident as usize]> for #enum_ident {
-                        type CheckType = [(); ((#enum_ident::#variant_ident as usize) < (0x1 << #bits_literal)) as usize ];
-                    }
-                });
-            },
-        }
+    let mut from_bits_match_arms = quote! {};
+    for variant in &variants {
+        check_discriminants_tokens.extend(quote_spanned! { variant.span() =>
+            impl checks::CheckDiscriminantInRange<[(); #enum_ident::#variant as usize]> for #enum_ident {
+                type CheckType = [(); ((#enum_ident::#variant as usize) < (0x1 << #bits)) as usize ];
+            }
+        });
+        use heck::SnakeCase as _;
+        use crate::ident_ext::IdentExt as _;
+        let snake_variant = syn::Ident::from_str(&variant.to_string().to_snake_case());
+        from_bits_match_arms.extend(quote! {
+            #snake_variant if #snake_variant == #enum_ident::#variant as <#enum_ident as bitfield::Specifier>::Base => {
+                #enum_ident::#variant
+            }
+        });
     }
 
     Ok(quote!{
         #check_discriminants_tokens
 
         impl bitfield::Specifier for #enum_ident {
-            const BITS: usize = #bits_literal;
-            type Base = <[(); #bits_literal] as bitfield::SpecifierBase>::Base;
+            const BITS: usize = #bits;
+            type Base = <[(); #bits] as bitfield::SpecifierBase>::Base;
             type Face = Self;
         }
 
         impl FromBits<<#enum_ident as bitfield::Specifier>::Base> for #enum_ident {
-            fn from_bits(base: bitfield::Bits<<#enum_ident as bitfield::Specifier>::Base>) -> Self {
-                unsafe {
-                    std::mem::transmute::<_, _>(base.into_raw())
+            fn from_bits(bits: bitfield::Bits<<#enum_ident as bitfield::Specifier>::Base>) -> Self {
+                match bits.into_raw() {
+                    #from_bits_match_arms
+                    // This API is only used internally and is only invoked on valid input.
+                    // Thus it is find to omit error handling for cases where the incoming
+                    // value is out of bounds to improve performance.
+                    _ => unsafe { std::hint::unreachable_unchecked() },
                 }
             }
         }
