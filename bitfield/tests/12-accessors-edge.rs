@@ -1,10 +1,7 @@
-// Make sure that you handle all the edge cases where bitfields can span
-// multiple bytes and that can span bytes on its end partially.
+// This test is equivalent to 03-accessors but with some fields spanning across
+// byte boundaries. This may or may not already work depending on how your
+// implementation has been done so far.
 //
-// This test is certainly not going to cover all edge cases but it can be used to
-// make sure that your implementation is at least robust to some of them.
-//
-// The access regions are the following:
 //
 //     ║  first byte   ║  second byte  ║  third byte   ║  fourth byte  ║
 //     ╟───────────────╫───────────────╫───────────────╫───────────────╢
@@ -15,7 +12,7 @@
 use bitfield::*;
 
 #[bitfield]
-pub struct ComplexBytes {
+pub struct EdgeCaseBytes {
     a: B9,
     b: B6,
     c: B13,
@@ -23,7 +20,7 @@ pub struct ComplexBytes {
 }
 
 fn main() {
-    let mut bitfield = ComplexBytes::new();
+    let mut bitfield = EdgeCaseBytes::new();
     assert_eq!(0, bitfield.get_a());
     assert_eq!(0, bitfield.get_b());
     assert_eq!(0, bitfield.get_c());
