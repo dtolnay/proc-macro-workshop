@@ -195,3 +195,59 @@ gen_access_bench_for!(
     (get_d, set_d),
     (get_e, set_e)
 );
+
+/// Invoke this test with: `cargo test --benches`
+#[test]
+fn verify_get_set_a() {
+    let mut macro_struct = MacroStruct::new();
+    let mut hand_struct = HandStruct::new();
+    assert_eq!(hand_struct.get_a(), macro_struct.get_a());
+    macro_struct.set_a(444);
+    hand_struct.set_a(444);
+    assert_eq!(hand_struct.get_a(), 444);
+    assert_eq!(hand_struct.get_a(), macro_struct.get_a());
+}
+
+#[test]
+fn verify_get_set_b() {
+    let mut macro_struct = MacroStruct::new();
+    let mut hand_struct = HandStruct::new();
+    assert_eq!(hand_struct.get_b(), macro_struct.get_b());
+    macro_struct.set_b(50);
+    hand_struct.set_b(50);
+    assert_eq!(hand_struct.get_b(), 50);
+    assert_eq!(hand_struct.get_b(), macro_struct.get_b());
+}
+
+#[test]
+fn verify_get_set_c() {
+    let mut macro_struct = MacroStruct::new();
+    let mut hand_struct = HandStruct::new();
+    assert_eq!(hand_struct.get_c(), macro_struct.get_c());
+    macro_struct.set_c(1234);
+    hand_struct.set_c(1234);
+    assert_eq!(hand_struct.get_c(), 1234);
+    assert_eq!(hand_struct.get_c(), macro_struct.get_c());
+}
+
+#[test]
+fn verify_get_set_d() {
+    let mut macro_struct = MacroStruct::new();
+    let mut hand_struct = HandStruct::new();
+    assert_eq!(hand_struct.get_d(), macro_struct.get_d());
+    macro_struct.set_d(12);
+    hand_struct.set_d(12);
+    assert_eq!(hand_struct.get_d(), 12);
+    assert_eq!(hand_struct.get_d(), macro_struct.get_d());
+}
+
+#[test]
+fn verify_get_set_e() {
+    let mut macro_struct = MacroStruct::new();
+    let mut hand_struct = HandStruct::new();
+    assert_eq!(hand_struct.get_e(), macro_struct.get_e());
+    macro_struct.set_e(7654321);
+    hand_struct.set_e(7654321);
+    assert_eq!(hand_struct.get_e(), 7654321);
+    assert_eq!(hand_struct.get_e(), macro_struct.get_e());
+}
