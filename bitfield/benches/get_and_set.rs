@@ -70,6 +70,7 @@ impl HandStruct {
 
     /// Sets the value of `a`.
     pub fn set_a(&mut self, new_val: u16) {
+        assert!(new_val < (0x1 << 9));
         let [ls, ms] = new_val.to_le_bytes();
         self.data[0] = ls;
         self.data[1] = (self.data[1] & (!0x1)) | (ms & 0x1);
@@ -77,26 +78,27 @@ impl HandStruct {
 
     /// Returns the value of `b`.
     pub fn get_b(&self) -> u8 {
-        (self.data[1] >> 1) & 0b0111_1111
+        (self.data[1] >> 1) & 0b0011_1111
     }
 
     /// Sets the value of `b`.
     pub fn set_b(&mut self, new_val: u8) {
-        self.data[1] &= 0b1000_0001;
-        self.data[1] |= new_val << 1;
+        assert!(new_val < (0x1 << 6));
+        self.data[1] = (self.data[1] & 0x81) | (new_val << 1);
     }
 
     /// Returns the value of `c`.
     pub fn get_c(&self) -> u16 {
         let mut res = 0;
         res |= (self.data[1] >> 7) as u16;
-        res |= (self.data[2] as u16) << 8;
-        res |= (((self.data[3] & 0b1111) as u16) << 12) as u16;
+        res |= (self.data[2] as u16) << 1;
+        res |= (((self.data[3] & 0b1111) as u16) << 9) as u16;
         res
     }
 
     /// Sets the value of `c`.
     pub fn set_c(&mut self, new_val: u16) {
+        assert!(new_val < (0x1 << 13));
         self.data[1] = (self.data[1] & !0x80) | (((new_val & 0x1) << 7) as u8);
         self.data[2] = ((new_val >> 1) & 0xFF) as u8;
         self.data[3] = (self.data[3] & !0x0F) | (((new_val >> 9) & 0x0F) as u8);
@@ -109,7 +111,8 @@ impl HandStruct {
 
     /// Sets the value of `d`.
     pub fn set_d(&mut self, new_val: u8) {
-        self.data[3] = (self.data[3] & 0xF0) | (new_val & 0x0F)
+        assert!(new_val < (0x1 << 4));
+        self.data[3] = (self.data[3] & 0xF0) | ((new_val & 0x0F) << 4)
     }
 
     /// Returns the value of `e`.
@@ -119,9 +122,10 @@ impl HandStruct {
 
     /// Sets the value of `e`.
     pub fn set_e(&mut self, new_val: u32) {
+        assert!((new_val as u64) < (0x1_u64 << 32));
         let le_bytes = new_val.to_le_bytes();
-        for n in 0..4 {
-            self.data[n + 4] = le_bytes[n];
+        for (n, byte) in le_bytes.iter().enumerate() {
+            self.data[n + 4] = *byte;
         }
     }
 }
