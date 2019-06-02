@@ -120,7 +120,7 @@ pub struct Field {
 }
 ```
 
-Here, one possible instance of the struct above might by printed by its
+Here, one possible instance of the struct above might be printed by its
 generated `Debug` impl like this:
 
 ```console
