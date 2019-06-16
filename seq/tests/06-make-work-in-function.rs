@@ -23,14 +23,28 @@
 // proc-macro-hack crate for a way to make this code work on a stable compiler
 // with relatively little effort.
 //
-// There shouldn't need to be any change to the macro implementation for this
-// test case beyond picking up proc-macro-hack, but for the sake of completeness
-// the expanded code here will look like:
+// Keep the original `seq!` macro for use outside of function bodies, and
+// introduce a new `fseq` macro using proc-macro-hack. Your proc-macro-hack
+// implementation crate" will look like:
 //
-//     sum += tuple.0 as u64;
-//     sum += tuple.1 as u64;
-//     sum += tuple.2 as u64;
-//     sum += tuple.3 as u64;
+//     #[proc_macro]
+//     pub fn seq(input: TokenStream) -> TokenStream {
+//         /* what you had before...! */
+//     }
+//
+//     #[proc_macro_hack]
+//     pub fn eseq(input: TokenStream) -> TokenStream {
+//         seq(input)
+//     }
+//
+// The expanded code will look like:
+//
+//     {
+//         sum += tuple.0 as u64;
+//         sum += tuple.1 as u64;
+//         sum += tuple.2 as u64;
+//         sum += tuple.3 as u64;
+//     }
 //
 //
 // Resources:
@@ -38,16 +52,18 @@
 //   - A stable workaround for procedural macros inside a function body:
 //     https://github.com/dtolnay/proc-macro-hack
 
-use seq::seq;
+use seq::eseq;
 
 fn main() {
     let tuple = (9u8, 90u16, 900u32, 9000u64);
 
     let mut sum = 0;
 
-    seq!(N in 0..4 {
-        sum += tuple.N as u64;
-    });
+    eseq!(N in 0..4 {{
+        #(
+            sum += tuple.N as u64;
+        )*
+    }});
 
     assert_eq!(sum, 9999);
 }

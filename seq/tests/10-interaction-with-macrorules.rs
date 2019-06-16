@@ -22,7 +22,7 @@
 // jumping into any code changes, make sure you understand what the code in this
 // test case is trying to do.
 
-use seq::seq;
+use seq::eseq;
 
 // Source of truth. Call a given macro passing nproc as argument.
 //
@@ -53,7 +53,7 @@ impl Proc {
 
 macro_rules! make_procs_array {
     ($nproc:literal) => {
-        seq!(N in 0..$nproc { [#(Proc::new(),)*] })
+        eseq!(N in 0..$nproc { [#(Proc::new(),)*] })
     }
 }
 

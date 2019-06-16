@@ -6,10 +6,10 @@
 //
 //     [Proc::new(0), Proc::new(1), ..., Proc::new(255),]
 
-use seq::seq;
+use seq::eseq;
 
 const PROCS: [Proc; 256] = {
-    seq!(N in 0..256 {
+    eseq!(N in 0..256 {
         [
             #(
                 Proc::new(N),
