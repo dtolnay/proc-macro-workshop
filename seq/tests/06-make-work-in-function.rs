@@ -24,8 +24,8 @@
 // with relatively little effort.
 //
 // Keep the original `seq!` macro for use outside of function bodies, and
-// introduce a new `fseq` macro using proc-macro-hack. Your proc-macro-hack
-// implementation crate" will look like:
+// introduce a new `eseq` macro using proc-macro-hack. Your proc-macro-hack
+// "implementation crate" will look like:
 //
 //     #[proc_macro]
 //     pub fn seq(input: TokenStream) -> TokenStream {
