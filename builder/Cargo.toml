@@ -16,4 +16,5 @@ path = "tests/progress.rs"
 trybuild = "1.0"
 
 [dependencies]
-# TODO
+syn = { version = "0.15.34", features = ["extra-traits"] }
+quote = "0.6.12"
