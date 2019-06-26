@@ -8,6 +8,28 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput, Ident};
 
+// better name would be `inner_ty_for_option`
+fn ty_inner_type(ty: &syn::Type) -> Option<&syn::Type> {
+    if let syn::Type::Path(syn::TypePath {
+        path: syn::Path { ref segments, .. },
+        ..
+    }) = ty
+    {
+        if segments.len() == 1 && segments[0].ident == "Option" {
+            if let syn::PathArguments::AngleBracketed(syn::AngleBracketedGenericArguments {
+                ref args,
+                ..
+            }) = segments[0].arguments
+            {
+                if let syn::GenericArgument::Type(ref ty1) = args[0] {
+                    return Some(ty1);
+                }
+            }
+        }
+    }
+    None
+}
+
 #[proc_macro_derive(Builder)]
 pub fn derive(input: TokenStream) -> TokenStream {
     let ast: DeriveInput = parse_macro_input!(input as DeriveInput);
@@ -32,8 +54,14 @@ pub fn derive(input: TokenStream) -> TokenStream {
         let name = &f.ident;
         let ty = &f.ty;
 
-        quote! {
-            #name: std::option::Option<#ty>
+        if ty_inner_type(ty).is_some() {
+            quote! {
+                #name: #ty
+            }
+        } else {
+            quote! {
+                #name: std::option::Option<#ty>
+            }
         }
     });
 
@@ -41,10 +69,19 @@ pub fn derive(input: TokenStream) -> TokenStream {
         let name = &f.ident;
         let ty = &f.ty;
 
-        quote! {
-            pub fn #name(&mut self, #name: #ty) -> &mut Self {
-                self.#name = Some(#name);
-                self
+        if let Some(inner_ty) = ty_inner_type(ty) {
+            quote! {
+                pub fn #name(&mut self, #name: #inner_ty) -> &mut Self {
+                    self.#name = Some(#name);
+                    self
+                }
+            }
+        } else {
+            quote! {
+                pub fn #name(&mut self, #name: #ty) -> &mut Self {
+                    self.#name = Some(#name);
+                    self
+                }
             }
         }
     });
@@ -52,8 +89,14 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let build_fields = fields.iter().map(|f| {
         let name = &f.ident;
 
-        quote! {
-            #name: self.#name.clone().ok_or(concat!(stringify!(#name), " is not set"))?
+        if ty_inner_type(&f.ty).is_some() {
+            quote! {
+                #name: self.#name.clone()
+            }
+        } else {
+            quote! {
+                #name: self.#name.clone().ok_or(concat!(stringify!(#name), " is not set"))?
+            }
         }
     });
 
