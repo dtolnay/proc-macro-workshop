@@ -8,14 +8,42 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput, Ident};
 
-// better name would be `inner_ty_for_option`
-fn ty_inner_type(ty: &syn::Type) -> Option<&syn::Type> {
+fn field_attr_builder_each(f: &syn::Field) -> Option<syn::Ident> {
+    if f.attrs.is_empty() {
+        return None;
+    }
+
+    if let syn::Meta::List(syn::MetaList { ident, nested, .. }) = f.attrs[0].parse_meta().ok()? {
+        if format!("{}", ident) == "builder" {
+            if nested.is_empty() {
+                return None;
+            }
+
+            if let syn::NestedMeta::Meta(syn::Meta::NameValue(syn::MetaNameValue {
+                ident,
+                lit,
+                ..
+            })) = &nested[0]
+            {
+                if format!("{}", ident) == "each" {
+                    if let syn::Lit::Str(lit_str) = lit {
+                        return Some(Ident::new(&lit_str.value(), ident.span()));
+                    }
+                }
+            }
+        }
+    }
+
+    None
+}
+
+fn ty_inner_type<'a>(wrapper: &str, ty: &'a syn::Type) -> Option<&'a syn::Type> {
     if let syn::Type::Path(syn::TypePath {
         path: syn::Path { ref segments, .. },
         ..
     }) = ty
     {
-        if segments.len() == 1 && segments[0].ident == "Option" {
+        if segments.len() == 1 && segments[0].ident == wrapper {
             if let syn::PathArguments::AngleBracketed(syn::AngleBracketedGenericArguments {
                 ref args,
                 ..
@@ -30,7 +58,7 @@ fn ty_inner_type(ty: &syn::Type) -> Option<&syn::Type> {
     None
 }
 
-#[proc_macro_derive(Builder)]
+#[proc_macro_derive(Builder, attributes(builder))]
 pub fn derive(input: TokenStream) -> TokenStream {
     let ast: DeriveInput = parse_macro_input!(input as DeriveInput);
     let name: &syn::Ident = &ast.ident;
@@ -54,7 +82,11 @@ pub fn derive(input: TokenStream) -> TokenStream {
         let name = &f.ident;
         let ty = &f.ty;
 
-        if ty_inner_type(ty).is_some() {
+        if field_attr_builder_each(f).is_some() {
+            quote! {
+                #name: #ty
+            }
+        } else if ty_inner_type("Option", ty).is_some() {
             quote! {
                 #name: #ty
             }
@@ -69,7 +101,16 @@ pub fn derive(input: TokenStream) -> TokenStream {
         let name = &f.ident;
         let ty = &f.ty;
 
-        if let Some(inner_ty) = ty_inner_type(ty) {
+        if let Some(builder_each_ident) = field_attr_builder_each(f) {
+            // assume that the field is a `Vec`
+            let inner_ty = ty_inner_type("Vec", ty).unwrap();
+            quote! {
+                pub fn #builder_each_ident(&mut self, #builder_each_ident: #inner_ty) -> &mut Self {
+                    self.#name.push(#builder_each_ident);
+                    self
+                }
+            }
+        } else if let Some(inner_ty) = ty_inner_type("Option", ty) {
             quote! {
                 pub fn #name(&mut self, #name: #inner_ty) -> &mut Self {
                     self.#name = Some(#name);
@@ -89,7 +130,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let build_fields = fields.iter().map(|f| {
         let name = &f.ident;
 
-        if ty_inner_type(&f.ty).is_some() {
+        if field_attr_builder_each(f).is_some() || ty_inner_type("Option", &f.ty).is_some() {
             quote! {
                 #name: self.#name.clone()
             }
@@ -103,8 +144,14 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let build_empty = fields.iter().map(|f| {
         let name = &f.ident;
 
-        quote! {
-            #name: None
+        if field_attr_builder_each(f).is_some() {
+            quote! {
+                #name: vec![]
+            }
+        } else {
+            quote! {
+                #name: None
+            }
         }
     });
 
