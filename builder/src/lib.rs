@@ -145,14 +145,14 @@ pub fn derive(input: TokenStream) -> TokenStream {
         } else if let Some(inner_ty) = ty_inner_type("Option", ty) {
             quote! {
                 pub fn #name(&mut self, #name: #inner_ty) -> &mut Self {
-                    self.#name = Some(#name);
+                    self.#name = std::option::Option::Some(#name);
                     self
                 }
             }
         } else {
             quote! {
                 pub fn #name(&mut self, #name: #ty) -> &mut Self {
-                    self.#name = Some(#name);
+                    self.#name = std::option::Option::Some(#name);
                     self
                 }
             }
@@ -196,7 +196,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 .unwrap()
         } else {
             quote! {
-                #name: None
+                #name: std::option::Option::None
             }
         }
     });
@@ -210,8 +210,8 @@ pub fn derive(input: TokenStream) -> TokenStream {
         impl #bindent {
             #(#methods)*
 
-            pub fn build(&self) -> Result<#name, Box<dyn std::error::Error>> {
-                Ok(
+            pub fn build(&self) -> std::result::Result<#name, std::boxed::Box<dyn std::error::Error>> {
+                std::result::Result::Ok(
                     #name {
                         #(#build_fields,)*
                     }
