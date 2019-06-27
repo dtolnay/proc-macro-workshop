@@ -8,29 +8,40 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput, Ident};
 
-fn field_attr_builder_each(f: &syn::Field) -> Option<syn::Ident> {
+fn field_attr_builder_each(f: &syn::Field) -> Option<Result<syn::Ident, syn::Error>> {
     if f.attrs.is_empty() {
         return None;
     }
 
-    if let syn::Meta::List(syn::MetaList { ident, nested, .. }) = f.attrs[0].parse_meta().ok()? {
-        if format!("{}", ident) == "builder" {
-            if nested.is_empty() {
-                return None;
+    if let syn::Meta::List(meta_list) = f.attrs[0].parse_meta().ok()? {
+        let err = syn::Error::new_spanned(meta_list.clone(), r#"expected `builder(each = "...")`"#);
+
+        if format!("{}", meta_list.ident) == "builder" {
+            // found builder, but nothing after that
+            if meta_list.nested.is_empty() {
+                return Some(Err(err));
             }
 
             if let syn::NestedMeta::Meta(syn::Meta::NameValue(syn::MetaNameValue {
                 ident,
                 lit,
                 ..
-            })) = &nested[0]
+            })) = &meta_list.nested[0]
             {
                 if format!("{}", ident) == "each" {
                     if let syn::Lit::Str(lit_str) = lit {
-                        return Some(Ident::new(&lit_str.value(), ident.span()));
+                        return Some(Ok(Ident::new(&lit_str.value(), ident.span())));
+                    } else {
+                        return Some(Err(err));
                     }
+                } else {
+                    return Some(Err(err));
                 }
+            } else {
+                return Some(Err(err));
             }
+        } else {
+            return Some(Err(err));
         }
     }
 
@@ -78,14 +89,33 @@ pub fn derive(input: TokenStream) -> TokenStream {
         unimplemented!();
     };
 
+    // Deal with potential error in `field_attr_builder_each()`
+    if let Err(e) = fields.iter().try_for_each(|f| {
+        if field_attr_builder_each(f).is_some() {
+            field_attr_builder_each(f)
+                .unwrap()
+                .map(|_| Ok(()))
+                .unwrap_or_else(|err| Err(err))
+        } else {
+            Ok(())
+        }
+    }) {
+        return e.to_compile_error().into();
+    }
+
     let optionized = fields.iter().map(|f| {
         let name = &f.ident;
         let ty = &f.ty;
 
         if field_attr_builder_each(f).is_some() {
-            quote! {
-                #name: #ty
-            }
+            field_attr_builder_each(f)
+                .unwrap()
+                .map(|_| {
+                    quote! {
+                        #name: #ty
+                    }
+                })
+                .unwrap()
         } else if ty_inner_type("Option", ty).is_some() {
             quote! {
                 #name: #ty
@@ -101,15 +131,17 @@ pub fn derive(input: TokenStream) -> TokenStream {
         let name = &f.ident;
         let ty = &f.ty;
 
-        if let Some(builder_each_ident) = field_attr_builder_each(f) {
-            // assume that the field is a `Vec`
-            let inner_ty = ty_inner_type("Vec", ty).unwrap();
-            quote! {
-                pub fn #builder_each_ident(&mut self, #builder_each_ident: #inner_ty) -> &mut Self {
-                    self.#name.push(#builder_each_ident);
-                    self
+        if let Some(builder_each_ident_res) = field_attr_builder_each(f) {
+            builder_each_ident_res.map(|builder_each_ident| {
+                // assume that the field is a `Vec`
+                let inner_ty = ty_inner_type("Vec", ty).unwrap();
+                quote! {
+                    pub fn #builder_each_ident(&mut self, #builder_each_ident: #inner_ty) -> &mut Self {
+                        self.#name.push(#builder_each_ident);
+                        self
+                    }
                 }
-            }
+            }).unwrap()
         } else if let Some(inner_ty) = ty_inner_type("Option", ty) {
             quote! {
                 pub fn #name(&mut self, #name: #inner_ty) -> &mut Self {
@@ -130,7 +162,16 @@ pub fn derive(input: TokenStream) -> TokenStream {
     let build_fields = fields.iter().map(|f| {
         let name = &f.ident;
 
-        if field_attr_builder_each(f).is_some() || ty_inner_type("Option", &f.ty).is_some() {
+        if field_attr_builder_each(f).is_some() {
+            field_attr_builder_each(f)
+                .unwrap()
+                .map(|_| {
+                    quote! {
+                        #name: self.#name.clone()
+                    }
+                })
+                .unwrap()
+        } else if ty_inner_type("Option", &f.ty).is_some() {
             quote! {
                 #name: self.#name.clone()
             }
@@ -145,9 +186,14 @@ pub fn derive(input: TokenStream) -> TokenStream {
         let name = &f.ident;
 
         if field_attr_builder_each(f).is_some() {
-            quote! {
-                #name: vec![]
-            }
+            field_attr_builder_each(f)
+                .unwrap()
+                .map(|_| {
+                    quote! {
+                        #name: vec![]
+                    }
+                })
+                .unwrap()
         } else {
             quote! {
                 #name: None
