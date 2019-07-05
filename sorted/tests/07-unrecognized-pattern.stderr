@@ -1,4 +1,4 @@
-error: unsupported by #[remain::sorted]
+error: unsupported by #[sorted]
   --> $DIR/07-unrecognized-pattern.rs:12:9
    |
 12 |         [] => Some(0),
