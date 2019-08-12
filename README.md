@@ -1,7 +1,7 @@
 # Rust Latam: procedural macros workshop
 
 *This repo contains a selection of projects designed to learn to write Rust
-procedural macros -- Rust code that generates Rust code.*
+procedural macros &mdash; Rust code that generates Rust code.*
 
 *Each of these projects is drawn closely from a compelling real use case. Out of
 the 5 projects here, 3 are macros that I have personally implemented in
