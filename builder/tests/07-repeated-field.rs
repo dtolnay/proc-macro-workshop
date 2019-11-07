@@ -7,10 +7,6 @@
 // and should use the word given in the string literal as the name for the
 // corresponding builder method which accepts one vector element at a time.
 //
-// This new "one at a time" builder method might have the same name as the
-// original "all at once" builder method.  The easiest way to handle this is
-// to produce one method or the other, not both.
-//
 // In order for the compiler to know that these builder attributes are
 // associated with your macro, they must be declared at the entry point of the
 // derive macro. Otherwise the compiler will report them as unrecognized
@@ -21,6 +17,10 @@
 // These are called inert attributes. The word "inert" indicates that these
 // attributes do not correspond to a macro invocation on their own; they are
 // simply looked at by other macro invocations.
+//
+// If the new one-at-a-time builder method is given the same name as the field,
+// avoid generating an all-at-once builder method for that field because the
+// names would conflict.
 //
 //
 // Resources:
