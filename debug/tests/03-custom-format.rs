@@ -16,8 +16,8 @@
 // Resources:
 //
 //   - Relevant syntax tree types:
-//     https://docs.rs/syn/0.15/syn/struct.Attribute.html
-//     https://docs.rs/syn/0.15/syn/enum.Meta.html
+//     https://docs.rs/syn/1.0/syn/struct.Attribute.html
+//     https://docs.rs/syn/1.0/syn/enum.Meta.html
 //
 //   - Macro for applying a format string to some runtime value:
 //     https://doc.rust-lang.org/std/macro.format_args.html

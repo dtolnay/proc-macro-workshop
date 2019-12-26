@@ -11,7 +11,7 @@
 // Resources:
 //
 //   - The syn::Pat syntax tree which forms the left hand side of a match arm:
-//     https://docs.rs/syn/0.15/syn/enum.Pat.html
+//     https://docs.rs/syn/1.0/syn/enum.Pat.html
 
 use sorted::sorted;
 

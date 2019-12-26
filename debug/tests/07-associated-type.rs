@@ -17,7 +17,7 @@
 // Resources:
 //
 //   - The relevant types in the input will be represented in this syntax tree
-//     node: https://docs.rs/syn/0.15/syn/struct.TypePath.html
+//     node: https://docs.rs/syn/1.0/syn/struct.TypePath.html
 
 use derive_debug::CustomDebug;
 use std::fmt::Debug;

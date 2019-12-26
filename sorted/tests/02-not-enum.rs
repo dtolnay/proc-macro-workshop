@@ -24,7 +24,7 @@
 // Resources
 //
 //   - The syn::Error type:
-//     https://docs.rs/syn/0.15/syn/struct.Error.html
+//     https://docs.rs/syn/1.0/syn/struct.Error.html
 
 use sorted::sorted;
 

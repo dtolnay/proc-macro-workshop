@@ -61,10 +61,10 @@
 // Resources:
 //
 //   - The VisitMut trait to iterate and mutate a syntax tree:
-//     https://docs.rs/syn/0.15/syn/visit_mut/trait.VisitMut.html
+//     https://docs.rs/syn/1.0/syn/visit_mut/trait.VisitMut.html
 //
 //   - The ExprMatch struct:
-//     https://docs.rs/syn/0.15/syn/struct.ExprMatch.html
+//     https://docs.rs/syn/1.0/syn/struct.ExprMatch.html
 
 use sorted::sorted;
 

@@ -12,7 +12,7 @@
 //     https://doc.rust-lang.org/std/macro.compile_error.html
 //
 //   - Lowering a syn::Error into an invocation of compile_error:
-//     https://docs.rs/syn/0.15/syn/struct.Error.html#method.to_compile_error
+//     https://docs.rs/syn/1.0/syn/struct.Error.html#method.to_compile_error
 
 use derive_builder::Builder;
 

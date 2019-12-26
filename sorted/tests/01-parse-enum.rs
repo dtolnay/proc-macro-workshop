@@ -26,7 +26,7 @@
 //     https://github.com/dtolnay/syn
 //
 //   - The syn::Item type which represents a parsed enum as a syntax tree:
-//     https://docs.rs/syn/0.15/syn/enum.Item.html
+//     https://docs.rs/syn/1.0/syn/enum.Item.html
 
 use sorted::sorted;
 

@@ -10,10 +10,10 @@
 // Resources:
 //
 //   - Representation of generics in the Syn syntax tree:
-//     https://docs.rs/syn/0.15/syn/struct.Generics.html
+//     https://docs.rs/syn/1.0/syn/struct.Generics.html
 //
 //   - A helper for placing generics into an impl signature:
-//     https://docs.rs/syn/0.15/syn/struct.Generics.html#method.split_for_impl
+//     https://docs.rs/syn/1.0/syn/struct.Generics.html#method.split_for_impl
 //
 //   - Example code from Syn which deals with type parameters:
 //     https://github.com/dtolnay/syn/tree/master/examples/heapsize
