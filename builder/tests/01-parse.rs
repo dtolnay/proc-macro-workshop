@@ -16,7 +16,7 @@
 //     https://github.com/dtolnay/syn
 //
 //   - The DeriveInput syntax tree which represents input of a derive macro:
-//     https://docs.rs/syn/0.15/syn/struct.DeriveInput.html
+//     https://docs.rs/syn/1.0/syn/struct.DeriveInput.html
 //
 //   - An example of a derive macro implemented using Syn:
 //     https://github.com/dtolnay/syn/tree/master/examples/heapsize

@@ -18,7 +18,7 @@
 // Resources:
 //
 //     - Example of creating a new Ident from a string:
-//       https://docs.rs/syn/0.15/syn/struct.Ident.html
+//       https://docs.rs/syn/1.0/syn/struct.Ident.html
 
 use seq::seq;
 
