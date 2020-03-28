@@ -3,5 +3,3 @@ error[E0277]: the trait bound `bitfield::checks::False: bitfield::checks::Discri
    |
 17 |     External,
    |     ^^^^^^^^ the trait `bitfield::checks::DiscriminantInRange` is not implemented for `bitfield::checks::False`
-
-For more information about this error, try `rustc --explain E0277`.
