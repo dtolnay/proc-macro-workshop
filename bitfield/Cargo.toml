@@ -10,7 +10,7 @@ name = "tests"
 path = "tests/progress.rs"
 
 [dev-dependencies]
-trybuild = "1.0"
+trybuild = { version = "1.0", features = ["diff"] }
 
 [dependencies]
 bitfield-impl = { path = "impl" }
