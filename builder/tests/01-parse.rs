@@ -31,4 +31,6 @@ pub struct Command {
     current_dir: String,
 }
 
-fn main() {}
+fn main() {
+    let a = 1;
+}
