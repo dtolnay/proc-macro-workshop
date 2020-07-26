@@ -1,5 +1,5 @@
 error[E0425]: cannot find value `Missing0` in this scope
-  --> $DIR/09-ident-span.rs:34:17
+  --> $DIR/08-ident-span.rs:34:17
    |
 34 |         let _ = Missing#N;
    |                 ^^^^^^^ not found in this scope
