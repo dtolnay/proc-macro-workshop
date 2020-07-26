@@ -6,9 +6,8 @@ fn tests() {
     //t.compile_fail("tests/03-expand-four-errors.rs");
     //t.pass("tests/04-paste-ident.rs");
     //t.pass("tests/05-repeat-section.rs");
-    //t.pass("tests/06-make-work-in-function.rs");
-    //t.pass("tests/07-init-array.rs");
-    //t.pass("tests/08-inclusive-range.rs");
-    //t.compile_fail("tests/09-ident-span.rs");
-    //t.pass("tests/10-interaction-with-macrorules.rs");
+    //t.pass("tests/06-init-array.rs");
+    //t.pass("tests/07-inclusive-range.rs");
+    //t.compile_fail("tests/08-ident-span.rs");
+    //t.pass("tests/09-interaction-with-macrorules.rs");
 }
