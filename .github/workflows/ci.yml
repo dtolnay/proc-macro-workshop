@@ -19,3 +19,20 @@ jobs:
         with:
           toolchain: ${{matrix.rust}}
       - run: cargo check
+
+  solution:
+    name: Project ${{matrix.project}}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [builder, debug, seq, sorted, bitfield]
+    env:
+      GIT_COMMITTER_NAME: proc-macro-workshop CI
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dtolnay/rust-toolchain@nightly
+      - run: git fetch origin --unshallow refs/solution/${{matrix.project}} HEAD
+      - run: git rebase HEAD FETCH_HEAD
+      - run: cargo test
+        working-directory: ${{matrix.project}}
