@@ -3,3 +3,5 @@ error: BitfieldSpecifier expected a number of variants which is a power of 2
    |
 10 | #[derive(BitfieldSpecifier)]
    |          ^^^^^^^^^^^^^^^^^
+   |
+   = note: this error originates in a derive macro (in Nightly builds, run with -Z macro-backtrace for more info)

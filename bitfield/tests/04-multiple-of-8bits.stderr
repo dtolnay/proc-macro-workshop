@@ -3,3 +3,5 @@ error[E0277]: the trait bound `bitfield::checks::SevenMod8: bitfield::checks::To
    |
 53 | #[bitfield]
    | ^^^^^^^^^^^ the trait `bitfield::checks::TotalSizeIsMultipleOfEightBits` is not implemented for `bitfield::checks::SevenMod8`
+   |
+   = note: this error originates in an attribute macro (in Nightly builds, run with -Z macro-backtrace for more info)
