@@ -3,3 +3,5 @@ error: expected enum or match expression
    |
 31 | #[sorted]
    | ^^^^^^^^^
+   |
+   = note: this error originates in an attribute macro (in Nightly builds, run with -Z macro-backtrace for more info)
