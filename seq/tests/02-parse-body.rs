@@ -14,7 +14,7 @@
 // Resources:
 //
 //   - Explanation of the purpose of proc-macro2:
-//     https://docs.rs/proc-macro2/0.4/proc_macro2/
+//     https://docs.rs/proc-macro2/1.0/proc_macro2/
 
 use seq::seq;
 
