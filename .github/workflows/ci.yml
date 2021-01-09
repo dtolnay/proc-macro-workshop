@@ -28,6 +28,7 @@ jobs:
       matrix:
         project: [builder, debug, seq, sorted, bitfield]
     env:
+      GIT_COMMITTER_EMAIL: proc-macro-workshop@dtolnay.github.io
       GIT_COMMITTER_NAME: proc-macro-workshop CI
     steps:
       - uses: actions/checkout@v2
