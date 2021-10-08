@@ -1,5 +1,5 @@
 error[E0308]: mismatched types
-  --> $DIR/11-bits-attribute-wrong.rs:11:14
+  --> tests/11-bits-attribute-wrong.rs:11:14
    |
 11 |     #[bits = 9]
    |              ^ expected an array with a fixed size of 9 elements, found one with 1 element

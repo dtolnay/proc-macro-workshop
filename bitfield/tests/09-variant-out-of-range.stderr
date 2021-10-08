@@ -1,5 +1,5 @@
 error[E0277]: the trait bound `bitfield::checks::False: bitfield::checks::DiscriminantInRange` is not satisfied
-  --> $DIR/09-variant-out-of-range.rs:17:5
+  --> tests/09-variant-out-of-range.rs:17:5
    |
 17 |     External,
    |     ^^^^^^^^ the trait `bitfield::checks::DiscriminantInRange` is not implemented for `bitfield::checks::False`

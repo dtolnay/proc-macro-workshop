@@ -1,5 +1,5 @@
 error: Dyn should sort before Fmt
-  --> $DIR/04-variants-with-data.rs:19:5
+  --> tests/04-variants-with-data.rs:19:5
    |
 19 |     Dyn(Box<dyn StdError>),
    |     ^^^
