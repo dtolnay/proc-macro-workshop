@@ -156,7 +156,7 @@ seq!(N in 0..512 {
     #[derive(Copy, Clone, PartialEq, Debug)]
     pub enum Processor {
         #(
-            Cpu#N,
+            Cpu~N,
         )*
     }
 });
