@@ -6,7 +6,7 @@ use seq::seq;
 seq!(N in 16..=20 {
     enum E {
         #(
-            Variant#N,
+            Variant~N,
         )*
     }
 });

@@ -5,7 +5,7 @@
 //
 //     enum Interrupt {
 //         seq!(N in 0..16 {
-//             Irq#N,
+//             Irq~N,
 //         });
 //     }
 //
@@ -34,7 +34,7 @@ seq!(N in 0..16 {
     #[derive(Copy, Clone, PartialEq, Debug)]
     enum Interrupt {
         #(
-            Irq#N,
+            Irq~N,
         )*
     }
 });
