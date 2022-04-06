@@ -3,3 +3,5 @@ error[E0277]: the trait bound `bitfield::checks::False: bitfield::checks::Discri
    |
 17 |     External,
    |     ^^^^^^^^ the trait `bitfield::checks::DiscriminantInRange` is not implemented for `bitfield::checks::False`
+   |
+   = help: the trait `bitfield::checks::DiscriminantInRange` is implemented for `bitfield::checks::True`
