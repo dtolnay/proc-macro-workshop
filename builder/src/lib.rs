@@ -1,10 +1,9 @@
 #[macro_use]
 extern crate quote;
 
-use proc_macro::{TokenStream};
+use proc_macro::TokenStream;
 
-use syn::{parse_macro_input, DeriveInput, Data, Fields};
-use syn::{self};
+use syn::{self, parse_macro_input, DeriveInput, Data, Fields};
 
 
 mod builder_fields;
