@@ -1,5 +1,5 @@
 error: expected `builder(each = "...")`
-  --> tests/08-unrecognized-attribute.rs:22:7
+  --> tests/08-unrecognized-attribute.rs:22:15
    |
 22 |     #[builder(eac = "arg")]
-   |       ^^^^^^^^^^^^^^^^^^^^
+   |               ^^^
