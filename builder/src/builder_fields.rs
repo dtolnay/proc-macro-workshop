@@ -1,6 +1,5 @@
 
-use syn::spanned::Spanned;
-use syn::{Ident, Type, Fields, Field, Attribute, Meta, NestedMeta, MetaNameValue, Lit};
+use syn::{Ident, Type, Fields, Field, Attribute, Meta, NestedMeta, MetaNameValue, Lit, spanned::Spanned};
 
 
 const ITERATIVE_IDENT_ATTR_MACRO_NAME: &str = "builder";
