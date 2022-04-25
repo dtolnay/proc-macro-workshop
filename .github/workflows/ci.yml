@@ -17,7 +17,7 @@ jobs:
       matrix:
         rust: [nightly, beta, stable]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{matrix.rust}}
@@ -34,7 +34,7 @@ jobs:
       GIT_COMMITTER_EMAIL: proc-macro-workshop@dtolnay.github.io
       GIT_COMMITTER_NAME: proc-macro-workshop CI
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@nightly
       - run: git fetch origin --unshallow refs/solution/${{matrix.project}} HEAD
       - run: git rebase HEAD FETCH_HEAD
