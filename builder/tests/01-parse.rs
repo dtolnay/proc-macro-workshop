@@ -8,6 +8,10 @@
 // Spend some time exploring the syn::DeriveInput struct on docs.rs by clicking
 // through its fields in the documentation to see whether it matches your
 // expectations for what information is available for the macro to work with.
+// Also, adding the "extra-traits" feature to the `syn` dependency will be useful
+// as it implements the Debug trait for most types.
+// See [Debugging tips](https://github.com/dtolnay/proc-macro-workshop#debugging-tips)
+// for additional information.
 //
 //
 // Resources:
