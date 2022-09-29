@@ -13,6 +13,14 @@
 // powerful enough to do anything useful. For example if we made it generate
 // something like a function, every one of those functions would have the same
 // name and the program would not compile.
+//
+// Resources:
+//
+//   - Struct to represent integer literals
+//     https://docs.rs/syn/latest/syn/struct.LitInt.html
+//
+//   - Creating new token streams from a sequence of token trees
+//     https://docs.rs/proc-macro2/latest/proc_macro2/struct.TokenStream.html#impl-FromIterator%3CTokenTree%3E-for-TokenStream
 
 use seq::seq;
 
