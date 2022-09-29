@@ -1,23 +1,23 @@
 error: error number 0
-  --> tests/03-expand-four-errors.rs:20:5
+  --> tests/03-expand-four-errors.rs:28:5
    |
-20 |     compile_error!(concat!("error number ", stringify!(N)));
+28 |     compile_error!(concat!("error number ", stringify!(N)));
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: error number 1
-  --> tests/03-expand-four-errors.rs:20:5
+  --> tests/03-expand-four-errors.rs:28:5
    |
-20 |     compile_error!(concat!("error number ", stringify!(N)));
+28 |     compile_error!(concat!("error number ", stringify!(N)));
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: error number 2
-  --> tests/03-expand-four-errors.rs:20:5
+  --> tests/03-expand-four-errors.rs:28:5
    |
-20 |     compile_error!(concat!("error number ", stringify!(N)));
+28 |     compile_error!(concat!("error number ", stringify!(N)));
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 error: error number 3
-  --> tests/03-expand-four-errors.rs:20:5
+  --> tests/03-expand-four-errors.rs:28:5
    |
-20 |     compile_error!(concat!("error number ", stringify!(N)));
+28 |     compile_error!(concat!("error number ", stringify!(N)));
    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
