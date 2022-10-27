@@ -1,10 +1,10 @@
 // Some fields may not always need to be specified. Typically these would be
 // represented as Option<T> in the struct being built.
 //
-// Have your macro identify fields in the macro input whose type is Option and
+// **Have your macro identify fields in the macro input whose type is Option and
 // make the corresponding builder method optional for the caller. In the test
 // case below, current_dir is optional and not passed to one of the builders in
-// main.
+// main.**
 //
 // Be aware that the Rust compiler performs name resolution only after macro
 // expansion has finished completely. That means during the evaluation of a
