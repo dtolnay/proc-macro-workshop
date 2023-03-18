@@ -43,6 +43,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@nightly
       - run: git fetch origin --unshallow refs/solution/${{matrix.project}} HEAD
+      - run: git rev-parse FETCH_HEAD
       - run: git rebase HEAD FETCH_HEAD
       - run: cargo test
         working-directory: ${{matrix.project}}
