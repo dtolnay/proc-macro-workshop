@@ -42,18 +42,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@nightly
+      - uses: dtolnay/install@cargo-outdated
       - run: git fetch origin --unshallow refs/solution/${{matrix.project}} HEAD
       - run: git rev-parse FETCH_HEAD
       - run: git rebase HEAD FETCH_HEAD
       - run: cargo test
         working-directory: ${{matrix.project}}
-
-  outdated:
-    name: Outdated
-    runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
-    timeout-minutes: 45
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dtolnay/install@cargo-outdated
-      - run: cargo outdated --workspace --exit-code 1
+      - run: cargo outdated --exit-code 1
+        working-directory: ${{matrix.project}}
+        if: github.event_name != 'pull_request'
