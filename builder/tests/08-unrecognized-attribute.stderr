@@ -1,10 +1,5 @@
 error: expected `builder(each = "...")`
   --> tests/08-unrecognized-attribute.rs:22:7
    |
-19 | #[derive(Builder)]
-   |          ------- in this derive macro expansion
-...
 22 |     #[builder(eac = "arg")]
    |       ^^^^^^^^^^^^^^^^^^^^
-   |
-   = note: this error originates in the derive macro `Builder` (in Nightly builds, run with -Z macro-backtrace for more info)

@@ -1,10 +1,5 @@
 error: SomethingFailed should sort before ThatFailed
   --> tests/03-out-of-order.rs:20:5
    |
-16 | #[sorted]
-   | --------- in this procedural macro expansion
-...
 20 |     SomethingFailed,
    |     ^^^^^^^^^^^^^^^
-   |
-   = note: this error originates in the attribute macro `sorted` (in Nightly builds, run with -Z macro-backtrace for more info)
