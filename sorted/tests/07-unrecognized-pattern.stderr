@@ -1,5 +1,10 @@
 error: unsupported by #[sorted]
   --> tests/07-unrecognized-pattern.rs:12:9
    |
+8  | #[sorted::check]
+   | ---------------- in this procedural macro expansion
+...
 12 |         [] => Some(0),
    |         ^^
+   |
+   = note: this error originates in the attribute macro `sorted::check` (in Nightly builds, run with -Z macro-backtrace for more info)

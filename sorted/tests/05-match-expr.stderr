@@ -1,5 +1,10 @@
 error: Fmt should sort before Io
   --> tests/05-match-expr.rs:88:13
    |
+81 |     #[sorted::check]
+   |     ---------------- in this procedural macro expansion
+...
 88 |             Fmt(e) => write!(f, "{}", e),
    |             ^^^
+   |
+   = note: this error originates in the attribute macro `sorted::check` (in Nightly builds, run with -Z macro-backtrace for more info)

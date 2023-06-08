@@ -1,5 +1,10 @@
 error: Error::Fmt should sort before Error::Io
   --> tests/06-pattern-path.rs:33:13
    |
+28 |     #[sorted::check]
+   |     ---------------- in this procedural macro expansion
+...
 33 |             Error::Fmt(e) => write!(f, "{}", e),
    |             ^^^^^^^^^^
+   |
+   = note: this error originates in the attribute macro `sorted::check` (in Nightly builds, run with -Z macro-backtrace for more info)
