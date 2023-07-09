@@ -11,16 +11,41 @@ pub fn derive(input: TokenStream) -> TokenStream {
     // println!("{:#?}", parsed_input);
 
     let target_struct_ident = parsed_input.ident;
-    let builder_strcut_name = format!("{}Builder", target_struct_ident);
-    let builder_struct_ident = Ident::new(&builder_strcut_name, target_struct_ident.span());
+    let builder_struct_name = format!("{}Builder", target_struct_ident);
+    let builder_struct_ident = Ident::new(&builder_struct_name, target_struct_ident.span());
+
+    let fields = if let syn::Data::Struct(syn::DataStruct {
+        fields: syn::Fields::Named(syn::FieldsNamed { ref named, .. }),
+        ..
+    }) = parsed_input.data
+    {
+        named
+    } else {
+        unimplemented!()
+    };
+
+    let optioned_fields = fields.iter().map(|f| {
+        let field_name = &f.ident;
+        let field_orig_type = &f.ty;
+        quote!( #field_name: core::option::Option<#field_orig_type>)
+    });
+
+    let field_idents = fields.iter().map(|f| &f.ident);
+
+    // println!("{:?}", optioned_fields);
 
     quote!(
-        struct #builder_struct_ident {}
+        struct #builder_struct_ident {
+            #(#optioned_fields),*
+        }
 
         impl #target_struct_ident {
             fn builder() -> #builder_struct_ident {
-                #builder_struct_ident{}
+                #builder_struct_ident {
+                    #(#field_idents: None,)*
+                }
             }
+
         }
     )
     .into()
