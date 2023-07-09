@@ -32,6 +32,17 @@ pub fn derive(input: TokenStream) -> TokenStream {
 
     let field_idents = fields.iter().map(|f| &f.ident);
 
+    let fn_getters = fields.iter().map(|f| {
+        let item_name = &f.ident;
+        let item_type = &f.ty;
+        quote! {
+            pub fn #item_name(&mut self, #item_name: #item_type) -> &mut Self {
+                self.#item_name = core::option::Option::Some(#item_name);
+                self
+            }
+        }
+    });
+
     // println!("{:?}", optioned_fields);
 
     quote!(
@@ -45,7 +56,10 @@ pub fn derive(input: TokenStream) -> TokenStream {
                     #(#field_idents: None,)*
                 }
             }
+        }
 
+        impl #builder_struct_ident {
+            #(#fn_getters)*
         }
     )
     .into()
