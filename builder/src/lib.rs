@@ -1,8 +1,12 @@
 use proc_macro::TokenStream;
+use syn::{parse_macro_input, DeriveInput};
 
 #[proc_macro_derive(Builder)]
 pub fn derive(input: TokenStream) -> TokenStream {
-    let _ = input;
+    // parsing input tokenstream to DeriveInput
+    let parsed_input = parse_macro_input!(input as DeriveInput);
 
-    unimplemented!()
+    println!("{:#?}", parsed_input);
+
+    TokenStream::new()
 }
