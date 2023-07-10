@@ -43,6 +43,13 @@ pub fn derive(input: TokenStream) -> TokenStream {
         }
     });
 
+    let build_functions = fields.iter().map(|f| {
+        let f_name = &f.ident;
+        quote! {
+            #f_name: self.#f_name.clone().ok_or(concat!("field `", stringify!( #f_name), "` has not been initialized!"))
+        }
+    });
+
     // println!("{:?}", optioned_fields);
 
     quote!(
@@ -59,6 +66,11 @@ pub fn derive(input: TokenStream) -> TokenStream {
         }
 
         impl #builder_struct_ident {
+            pub fn build(&self) -> Result<#target_struct_ident, Box<dyn std::error::Error>> {
+                Ok(#target_struct_ident {
+                    #(#build_functions?),*
+                })
+            }
             #(#fn_getters)*
         }
     )
