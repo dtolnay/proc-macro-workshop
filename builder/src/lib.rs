@@ -1,6 +1,6 @@
 use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse_macro_input, DeriveInput, GenericArgument, Ident};
+use syn::{parse_macro_input, DeriveInput, GenericArgument, Ident, Lit};
 
 #[proc_macro_derive(Builder, attributes(builder))]
 pub fn derive(input: TokenStream) -> TokenStream {
@@ -118,8 +118,9 @@ pub fn derive(input: TokenStream) -> TokenStream {
         let item_name = &f.ident;
         let item_type = &f.ty;
 
-        if let Err(e) = check_annotation_and_extract_values(f) {
-            return e.to_compile_error();
+        let attr = match check_annotation_and_extract_values(f) {
+            Ok(a) => a,
+            Err(e) => return e.to_compile_error(),
         };
 
         if is_option(item_type) {
@@ -189,7 +190,7 @@ mod keyword {
 /// Allowed Builder attribute
 #[derive(Debug)]
 enum BuilderAttr {
-    Builder(proc_macro2::Span, Ident),
+    Builder(proc_macro2::Span, syn::Lit),
 }
 
 impl syn::parse::Parse for BuilderAttr {
@@ -204,8 +205,8 @@ impl syn::parse::Parse for BuilderAttr {
             let key_value;
             syn::parenthesized!(key_value in content);
             key_value.parse::<keyword::each>()?;
-            input.parse::<syn::Token![=]>()?;
-            let val = key_value.parse::<syn::Ident>()?;
+            key_value.parse::<syn::Token![=]>()?;
+            let val = key_value.parse::<syn::Lit>()?;
             Ok(BuilderAttr::Builder(span, val))
         } else {
             Err(lookahead.error())
