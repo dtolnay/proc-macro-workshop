@@ -1,8 +1,8 @@
 use proc_macro::TokenStream;
-use quote::quote;
+use quote::{quote, ToTokens};
 use syn::{parse_macro_input, DeriveInput, GenericArgument, Ident};
 
-#[proc_macro_derive(Builder)]
+#[proc_macro_derive(Builder, attributes(builder))]
 pub fn derive(input: TokenStream) -> TokenStream {
     // parsing input tokenstream to DeriveInput
     let parsed_input = parse_macro_input!(input as DeriveInput);
@@ -25,21 +25,27 @@ pub fn derive(input: TokenStream) -> TokenStream {
         unimplemented!()
     };
 
-    // utility closure to check if field is option
-    let is_option = |field: &syn::Type| {
+    // generic function to check if specified field is wrapper type of given input type
+    let is_of_type = |field: &syn::Type, type_name: &str| {
         if let syn::Type::Path(ref p) = field {
             return p
                 .path
                 .segments
                 .last()
-                .map(|e| e.ident.to_string() == "Option")
+                .map(|e| e.ident.to_string() == type_name)
                 == Some(true);
         }
         false
     };
 
+    // utility closure to check if field is option
+    let is_option = |field: &syn::Type| is_of_type(field, "Option");
+
+    // utility closure to check if field is vector
+    let is_vec = |field: &syn::Type| is_of_type(field, "Vec");
+
     // utility function to unwrap the type within Option
-    let unwrap_optioned_type = |opt: &syn::Type| {
+    let unwrap_contained_type = |opt: &syn::Type| {
         assert!(is_option(&opt));
         if let syn::Type::Path(typath) = opt {
             if let syn::PathArguments::AngleBracketed(ref inner) = typath.path.segments[0].arguments
@@ -56,7 +62,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
                             Some(
                                 path.segments
                                     .first()
-                                    .expect("Option should contain type")
+                                    .expect("Wrapper type should contain type")
                                     .ident
                                     .clone(),
                             )
@@ -71,6 +77,25 @@ pub fn derive(input: TokenStream) -> TokenStream {
         } else {
             None
         }
+    };
+
+    // utility method to check if an annotation is present
+    let check_annotation_and_extract_values = |f: &syn::Field| {
+        if f.attrs.is_empty() {
+            // return Ok(None);
+            return syn::Result::Ok(None);
+        };
+
+        for attr in &f.attrs {
+            if attr.path().segments.len() == 1 && attr.path().segments[0].ident == "builder" {
+                let a: BuilderAttr = syn::parse2(attr.to_token_stream())?;
+                println!("\nMetalist: {:?}", a);
+                return Ok(Some(a));
+            }
+        }
+
+        // Ok(None)
+        return syn::Result::Ok(None);
     };
 
     // map and wrap all mandatory fields in option
@@ -93,9 +118,13 @@ pub fn derive(input: TokenStream) -> TokenStream {
         let item_name = &f.ident;
         let item_type = &f.ty;
 
+        if let Err(e) = check_annotation_and_extract_values(f) {
+            return e.to_compile_error();
+        };
+
         if is_option(item_type) {
             // extract option
-            let unwraped_type = unwrap_optioned_type(item_type).unwrap();
+            let unwraped_type = unwrap_contained_type(item_type).unwrap();
 
             quote! {
                 pub fn #item_name(&mut self, #item_name: #unwraped_type) -> &mut Self{
@@ -113,6 +142,7 @@ pub fn derive(input: TokenStream) -> TokenStream {
         }
     });
 
+    // build  functions
     let build_functions = fields.iter().map(|f| {
         let f_name = &f.ident;
         if is_option(&f.ty){
@@ -149,4 +179,36 @@ pub fn derive(input: TokenStream) -> TokenStream {
         }
     )
     .into()
+}
+
+mod keyword {
+    syn::custom_keyword!(builder);
+    syn::custom_keyword!(each);
+}
+
+/// Allowed Builder attribute
+#[derive(Debug)]
+enum BuilderAttr {
+    Builder(proc_macro2::Span, Ident),
+}
+
+impl syn::parse::Parse for BuilderAttr {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        input.parse::<syn::Token![#]>()?;
+        let content;
+        syn::bracketed!(content in input);
+
+        let lookahead = content.lookahead1();
+        if lookahead.peek(keyword::builder) {
+            let span = content.parse::<keyword::builder>()?.span;
+            let key_value;
+            syn::parenthesized!(key_value in content);
+            key_value.parse::<keyword::each>()?;
+            input.parse::<syn::Token![=]>()?;
+            let val = key_value.parse::<syn::Ident>()?;
+            Ok(BuilderAttr::Builder(span, val))
+        } else {
+            Err(lookahead.error())
+        }
+    }
 }
