@@ -127,20 +127,26 @@ impl syn::parse::Parse for BuilderAttr {
 
         let lookahead = content.lookahead1();
         if lookahead.peek(keyword::builder) {
-            let span = content.parse::<keyword::builder>()?.span;
+            let builder_span = content.parse::<keyword::builder>()?.span;
             let key_value;
-            syn::parenthesized!(key_value in content);
+            let paren_span = syn::parenthesized!(key_value in content).span.join();
+
+            let total_complete_span = builder_span.join(paren_span).unwrap_or(bracket_span.join());
+
             key_value.parse::<keyword::each>().map_err(|_| {
-                Error::new(bracket_span.join(), r#"expected `builder(each = "...")`"#)
+                Error::new(total_complete_span, r#"expected `builder(each = "...")`"#)
             })?;
             key_value.parse::<syn::Token![=]>()?;
-            let val = key_value.parse::<syn::Lit>()?;
-            let string_literal = if let syn::Lit::Str(str_literal) = val {
+            let string_literal = key_value.parse::<syn::Lit>()?;
+            let string_literal = if let syn::Lit::Str(str_literal) = string_literal {
                 str_literal.value()
             } else {
-                return Err(syn::Error::new_spanned(val, "expected a string literal"));
+                return Err(syn::Error::new_spanned(
+                    string_literal,
+                    "expected a string literal",
+                ));
             };
-            Ok(BuilderAttr::Builder(span, string_literal))
+            Ok(BuilderAttr::Builder(builder_span, string_literal))
         } else {
             Err(lookahead.error())
         }
