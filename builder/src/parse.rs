@@ -1,4 +1,5 @@
 use quote::spanned::Spanned;
+use syn::Error;
 
 use crate::macro_util::{is_option, take_first_builder_attribute_from_list, unwrap_contained_type};
 
@@ -122,14 +123,16 @@ impl syn::parse::Parse for BuilderAttr {
     fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
         input.parse::<syn::Token![#]>()?;
         let content;
-        syn::bracketed!(content in input);
+        let bracket_span = syn::bracketed!(content in input).span;
 
         let lookahead = content.lookahead1();
         if lookahead.peek(keyword::builder) {
             let span = content.parse::<keyword::builder>()?.span;
             let key_value;
             syn::parenthesized!(key_value in content);
-            key_value.parse::<keyword::each>()?;
+            key_value.parse::<keyword::each>().map_err(|_| {
+                Error::new(bracket_span.join(), r#"expected `builder(each = "...")`"#)
+            })?;
             key_value.parse::<syn::Token![=]>()?;
             let val = key_value.parse::<syn::Lit>()?;
             let string_literal = if let syn::Lit::Str(str_literal) = val {

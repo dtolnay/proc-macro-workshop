@@ -76,26 +76,3 @@ where
         Ok(None)
     }
 }
-
-// FOLLOWING can be removed after first sanity
-
-// // utility method to check if an annotation is present
-// let check_annotation_and_extract_values = |f: &syn::Field| {
-//     if f.attrs.is_empty() {
-//         // return Ok(None);
-//         return syn::Result::Ok(None);
-//     };
-
-//     for attr in &f.attrs {
-//         let a: BuilderAttr = syn::parse2(attr.to_token_stream())?;
-//         if !is_vec(&f.ty) {
-//             return Err(syn::Error::new_spanned(f.ty.clone(), "Expected a Vec"));
-//         }
-//         // safely unwrap as checked if it's Vec
-//         let wrapped_ty = unwrap_contained_type(&f.ty).unwrap();
-//         return Ok(Some((a, wrapped_ty)));
-//     }
-
-//     // Ok(None)
-//     return syn::Result::Ok(None);
-// };
