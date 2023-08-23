@@ -25,7 +25,7 @@
 //
 // Resources:
 //
-//   - Relevant syntax tree types:
+//   - Relevant syntax tree type:
 //     https://docs.rs/syn/2.0/syn/struct.Attribute.html
 
 use derive_builder::Builder;
