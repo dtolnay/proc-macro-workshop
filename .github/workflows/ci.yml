@@ -22,7 +22,7 @@ jobs:
         rust: [nightly, beta, stable]
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{matrix.rust}}
@@ -40,7 +40,7 @@ jobs:
       GIT_COMMITTER_NAME: proc-macro-workshop CI
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
       - uses: dtolnay/install@cargo-outdated
       - run: git fetch origin --unshallow refs/solution/${{matrix.project}} HEAD
