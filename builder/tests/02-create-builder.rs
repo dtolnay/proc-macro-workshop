@@ -53,7 +53,7 @@ pub struct Command {
 }
 
 fn main() {
-    let builder = Command::builder();
+    let builder = Command::new();
 
     let _ = builder;
 }
