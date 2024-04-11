@@ -3,7 +3,7 @@
 //
 //     impl<T: ?Sized> Debug for PhantomData<T> {...}
 //
-// To accomodate this sort of situation, one way would be to generate a trait
+// To accommodate this sort of situation, one way would be to generate a trait
 // bound `#field_ty: Debug` for each field type in the input, rather than
 // `#param: Debug` for each generic parameter. For example in the case of the
 // struct Field<T> in the test case below, it would be:
