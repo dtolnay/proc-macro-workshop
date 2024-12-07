@@ -46,8 +46,6 @@ jobs:
       - run: git fetch origin --unshallow refs/solution/${{matrix.project}} HEAD
       - run: git rev-parse FETCH_HEAD
       - run: git rebase HEAD FETCH_HEAD
-      - name: Work around https://github.com/kbknapp/cargo-outdated/issues/402
-        run: sed -i '2i rust-version = "1.77"' Cargo.toml
       - run: cargo test
         working-directory: ${{matrix.project}}
       - run: cargo outdated --exit-code 1
