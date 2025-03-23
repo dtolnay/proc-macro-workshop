@@ -16,4 +16,7 @@ path = "tests/progress.rs"
 trybuild = { version = "1.0.49", features = ["diff"] }
 
 [dependencies]
-# TODO
+proc-macro2 = "1.0.94"
+quote = "1.0.40"
+syn = "2.0.100"
+
