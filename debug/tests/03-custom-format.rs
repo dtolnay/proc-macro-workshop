@@ -16,7 +16,7 @@
 // Resources:
 //
 //   - Relevant syntax tree type:
-//     https://docs.rs/syn/2.0/syn/struct.Attribute.html
+//     https://docs.rs/syn/3/syn/struct.Attribute.html
 //
 //   - Macro for applying a format string to some runtime value:
 //     https://doc.rust-lang.org/std/macro.format_args.html
